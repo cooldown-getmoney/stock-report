@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>短线选股分析日报 · 盘后复盘 2026-07-27</title>
+<style>
+  :root{
+    --bg:#0f1115; --bg2:#151821; --card:#191c24; --card2:#1e2230;
+    --line:#2a2f3c; --line2:#333a4a;
+    --tx:#e7eaf0; --tx2:#9aa3b5; --tx3:#6b7385;
+    --up:#f6465d; --up-bg:rgba(246,70,93,.12);
+    --down:#2ebd85; --down-bg:rgba(46,189,133,.12);
+    --acc:#5b8cff; --acc2:#8a7bff; --gold:#f0b90b;
+    --radius:14px; --shadow:0 6px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+    background:radial-gradient(1200px 600px at 15% -10%,rgba(91,140,255,.10),transparent 60%),
+               radial-gradient(1000px 500px at 100% 0%,rgba(138,123,255,.08),transparent 55%),
+               var(--bg);
+    color:var(--tx); line-height:1.6; padding:28px 16px 60px; min-height:100vh;
+  }
+  .wrap{max-width:960px;margin:0 auto}
+  /* Header */
+  .hd{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+      padding:22px 26px;background:linear-gradient(135deg,var(--card2),var(--card));
+      border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .hd::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(var(--acc),var(--acc2))}
+  .hd h1{font-size:22px;font-weight:700;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
+  .hd h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .hd .sub{color:var(--tx2);font-size:13px;margin-top:4px}
+  .badge{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid}
+  .badge.pre{color:var(--gold);border-color:rgba(240,185,11,.4);background:rgba(240,185,11,.1)}
+  .badge.post{color:var(--acc);border-color:rgba(91,140,255,.4);background:rgba(91,140,255,.1)}
+  /* 公网页手动刷新 */
+  .btn-refresh{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;
+    border:1px solid rgba(91,140,255,.45);background:rgba(91,140,255,.12);color:var(--acc);
+    font-size:13px;font-weight:600;cursor:pointer;transition:.18s;white-space:nowrap}
+  .btn-refresh:hover{border-color:var(--acc);background:rgba(91,140,255,.22)}
+  .btn-refresh:active{transform:scale(.96)}
+  .btn-refresh:disabled{opacity:.6;cursor:progress}
+  .sync-tip{font-size:11px;color:var(--tx3);margin-top:6px;text-align:right}
+  .hd .meta{text-align:right;font-size:12px;color:var(--tx3)}
+  .hd .meta b{color:var(--tx);font-size:14px;display:block;margin-bottom:4px}
+
+  /* Section */
+  .sec{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+       box-shadow:var(--shadow);overflow:hidden}
+  .sec-hd{display:flex;align-items:center;gap:10px;padding:15px 22px;border-bottom:1px solid var(--line);
+          background:linear-gradient(90deg,rgba(91,140,255,.06),transparent)}
+  .sec-hd .no{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--acc),var(--acc2));
+              display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+  .sec-hd h2{font-size:16px;font-weight:600}
+  .sec-hd .tag{margin-left:auto;font-size:11px;color:var(--tx3)}
+  .sec-bd{padding:20px 22px}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .kpi{background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:14px 16px;position:relative}
+  .kpi .k{font-size:12px;color:var(--tx2);margin-bottom:6px}
+  .kpi .v{font-size:19px;font-weight:700}
+  .kpi .d{font-size:11px;color:var(--tx3);margin-top:3px}
+  .v.up{color:var(--up)} .v.down{color:var(--down)} .v.acc{color:var(--acc)} .v.gold{color:var(--gold)}
+
+  /* News list */
+  .news li{list-style:none;display:flex;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line)}
+  .news li:last-child{border-bottom:none}
+  .news .ic{flex-shrink:0;width:22px;height:22px;border-radius:6px;background:var(--acc);opacity:.85;
+            display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:700}
+  .news .ic.macro{background:var(--acc2)} .news .ic.pol{background:var(--gold);color:#1a1a1a}
+  .news p{font-size:13.5px} .news p b{color:var(--tx)} .news p span{color:var(--tx2)}
+  .news .bd{flex:1}
+  .news .tags{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .imp{display:inline-block;font-size:11px;padding:2px 9px;border-radius:6px;font-weight:600;line-height:1.6}
+  .imp.good{color:var(--up);background:var(--up-bg);border:1px solid rgba(246,70,93,.25)}
+  .imp.bad{color:var(--down);background:var(--down-bg);border:1px solid rgba(46,189,133,.25)}
+  .imp.neu{color:var(--tx2);background:rgba(154,163,181,.10);border:1px solid var(--line)}
+  .imp-lb{font-size:11px;color:var(--tx3)}
+  /* 板块影响小结 & 前瞻研判 */
+  .impact-sum{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .impact-box{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .impact-box h4{font-size:12px;margin-bottom:10px;font-weight:600}
+  .impact-box.good h4{color:var(--up)} .impact-box.bad h4{color:var(--down)}
+  .chip-line{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:12px;padding:4px 11px;border-radius:14px;font-weight:600}
+  .chip.good{color:var(--up);background:var(--up-bg);border:1px solid rgba(246,70,93,.3)}
+  .chip.bad{color:var(--down);background:var(--down-bg);border:1px solid rgba(46,189,133,.3)}
+  .impact-box .why{font-size:11.5px;color:var(--tx3);margin-top:9px;line-height:1.7}
+  .fw{margin-top:16px;background:var(--card2);border:1px solid var(--line);border-left:3px solid var(--gold);
+      border-radius:10px;padding:14px 16px}
+  .fw h4{font-size:13px;color:var(--gold);margin-bottom:10px;font-weight:600;display:flex;align-items:center;gap:6px}
+  .fw-item{display:flex;gap:10px;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)}
+  .fw-item:last-of-type{border-bottom:none}
+  .fw-item .when{flex-shrink:0;font-size:12px;color:var(--gold);font-weight:600;width:86px}
+  .fw-item .what{color:var(--tx2)} .fw-item .what b{color:var(--tx)}
+  .fw-view{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--tx2);line-height:1.75}
+  .fw-view b{color:var(--gold)}
+
+  /* Sector bars */
+  .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:11px}
+  .bar-row .nm{width:110px;font-size:13px;flex-shrink:0}
+  .bar-track{flex:1;height:22px;background:var(--bg2);border-radius:6px;overflow:hidden;position:relative}
+  .bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:12px;
+            font-weight:600;color:#fff;transition:width 1s ease;white-space:nowrap}
+  .bar-fill.up{background:linear-gradient(90deg,#c0304a,var(--up))}
+  .bar-fill.down{background:linear-gradient(90deg,#1f8a61,var(--down))}
+  .flow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .flow-box{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .flow-box h4{font-size:12px;color:var(--tx2);margin-bottom:10px;font-weight:500}
+  .flow-item{display:flex;justify-content:space-between;font-size:13px;padding:5px 0}
+  .flow-item .amt{font-weight:600}
+  .mkt-note{margin-top:16px;background:var(--card2);border:1px solid var(--line);border-left:3px solid var(--acc);
+            border-radius:10px;padding:13px 16px;font-size:13px;color:var(--tx2);line-height:1.8}
+  .mkt-note b{color:var(--tx)} .mkt-note .hl{color:var(--acc)}
+
+  /* Stock picks */
+  .picks{display:flex;flex-direction:column;gap:14px}
+  .pick{background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--line2);
+        border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+  .pick::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--acc)}
+  .pick.hot::before{background:var(--up)} .pick.dip::before{background:var(--gold)}
+  .pick-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .pick-name{display:flex;align-items:baseline;gap:10px}
+  .pick-name .n{font-size:17px;font-weight:700}
+  .pick-name .c{font-size:13px;color:var(--tx3)}
+  .pick-type{font-size:11px;padding:3px 10px;border-radius:14px;font-weight:600}
+  .pick-type.hot{color:var(--up);background:var(--up-bg);border:1px solid rgba(246,70,93,.3)}
+  .pick-type.dip{color:var(--gold);background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.3)}
+  .stars{color:var(--gold);font-size:13px;letter-spacing:2px}
+  .pick-logic{font-size:13px;color:var(--tx2);margin-bottom:13px;padding:9px 12px;background:var(--bg2);border-radius:8px}
+  .pick-logic b{color:var(--acc)}
+  .levels{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .lv{text-align:center;padding:10px 8px;border-radius:9px;background:var(--bg2);border:1px solid var(--line)}
+  .lv .lk{font-size:11px;color:var(--tx3);margin-bottom:4px}
+  .lv .lv-v{font-size:16px;font-weight:700}
+  .lv.buy .lv-v{color:var(--acc)} .lv.tp .lv-v{color:var(--up)} .lv.sl .lv-v{color:var(--down)}
+  .pick-note{font-size:12px;color:var(--tx3);margin-top:10px;display:flex;align-items:center;gap:6px}
+  .pick-note::before{content:"⚠";color:var(--gold)}
+
+  /* ===== 持仓诊断模块 ===== */
+  .diag-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .diag-field label{display:block;font-size:12px;color:var(--tx2);margin-bottom:6px}
+  .diag-field input,.diag-field select{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--tx);
+        border-radius:8px;padding:10px 12px;font-size:14px;outline:none;font-family:inherit}
+  .diag-field input:focus,.diag-field select:focus{border-color:var(--acc)}
+  .diag-field .hint{font-size:11px;color:var(--tx3);margin-top:4px}
+  .price-row{display:flex;gap:8px}
+  .price-row input{flex:1}
+  .btn-fetch{flex:0 0 auto;background:var(--card2);color:var(--tx);border:1px solid var(--line);border-radius:8px;
+        padding:0 14px;font-size:13px;cursor:pointer;white-space:nowrap}
+  .btn-fetch:hover{border-color:var(--acc)}
+  .diag-actions{display:flex;gap:10px;margin-top:16px}
+  .btn-primary{flex:1;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:none;border-radius:8px;
+        padding:12px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-ghost{flex:0 0 auto;background:var(--card2);color:var(--tx);border:1px solid var(--line);border-radius:8px;
+        padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer}
+  #diagStatus{font-size:12px;margin-top:10px;min-height:14px}
+  .diag-ok{color:var(--acc)} .diag-err{color:var(--up)} .diag-load{color:var(--gold)}
+  .diag-result{display:none;margin-top:20px;border-top:1px solid var(--line);padding-top:20px}
+  .diag-result.show{display:block}
+  .diag-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  .diag-kpi{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px 6px;text-align:center}
+  .diag-kpi .v{font-size:16px;font-weight:700}
+  .diag-kpi .k{font-size:11px;color:var(--tx2);margin-top:4px}
+  .diag-sub{font-size:13px;color:var(--tx);margin:18px 0 10px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .diag-sub::before{content:"";width:3px;height:14px;background:var(--acc);border-radius:2px}
+  .diag-table{width:100%;border-collapse:collapse;font-size:13px}
+  .diag-table th,.diag-table td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+  .diag-table th{color:var(--tx3);font-weight:600;font-size:12px}
+  .diag-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .op-tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
+  .op-tag.add{background:rgba(91,140,255,.15);color:var(--acc)}
+  .op-tag.hold{background:rgba(154,163,181,.15);color:var(--tx2)}
+  .op-tag.cut{background:rgba(240,185,11,.15);color:var(--gold)}
+  .op-tag.out{background:var(--up-bg);color:var(--up)}
+  .ladder{position:relative;height:82px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;margin:6px 0 8px}
+  .ladder-axis{position:absolute;left:12px;right:12px;top:50%;height:2px;background:var(--line2)}
+  .pt{position:absolute;top:50%;width:2px;height:42px;margin-top:-21px;transform:translateX(-50%)}
+  .pt .lbl{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;white-space:nowrap}
+  .pt .val{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;white-space:nowrap;color:var(--tx3)}
+  .pt.now{width:3px;height:56px;margin-top:-28px;z-index:3}
+  .pt.now .lbl{font-weight:800;font-size:11px}
+  .diag-advice{background:var(--card2);border-left:3px solid var(--acc);border-radius:8px;padding:14px 16px;
+        font-size:13.5px;margin-top:16px;line-height:1.75}
+  .diag-advice b{color:var(--acc)}
+  .diag-tip{font-size:11px;color:var(--tx3);text-align:center;margin-top:2px}
+  /* 价格监控与警戒提醒 */
+  .d-chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap}
+  .d-chip.ok{background:rgba(91,140,255,.12);color:var(--acc)}
+  .d-chip.warn{background:rgba(240,185,11,.15);color:var(--gold)}
+  .d-chip.up{background:var(--up-bg);color:var(--up)}
+  .d-chip.down{background:var(--down-bg);color:var(--down)}
+  .d-chip.err{background:rgba(154,163,181,.15);color:var(--tx3)}
+  .d-wbtn{background:var(--card2);border:1px solid var(--line);color:var(--tx);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer}
+  .d-wbtn:hover{border-color:var(--gold)}
+  .d-alert-mask{position:fixed;inset:0;background:rgba(5,7,12,.8);z-index:99;display:none;align-items:center;justify-content:center;padding:20px}
+  .d-alert-mask.show{display:flex}
+  .d-alert-box{background:var(--card);border:2px solid var(--up);border-radius:14px;max-width:560px;width:100%;padding:24px;animation:d-alarm 1s infinite}
+  @keyframes d-alarm{0%,100%{box-shadow:0 0 0 0 rgba(246,70,93,.55)}50%{box-shadow:0 0 0 16px rgba(246,70,93,0)}}
+  .d-alert-box h3{font-size:19px;color:var(--up);margin-bottom:14px}
+  .d-alert-item{background:var(--card2);border-left:3px solid var(--up);border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:14px;line-height:1.7}
+  .d-alert-item.down{border-left-color:var(--down)}
+  .d-alert-btn{width:100%;background:linear-gradient(135deg,#e3a008,#f0b90b);color:#1a1205;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px}
+
+  /* Disclaimer */
+  .foot{margin-top:20px;padding:16px 22px;background:var(--card);border:1px solid var(--line);
+        border-radius:var(--radius);font-size:12px;color:var(--tx3);text-align:center;line-height:1.8}
+  .foot b{color:var(--tx2)}
+  @media(max-width:680px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .levels{grid-template-columns:1fr}
+    .flow{grid-template-columns:1fr}
+    .impact-sum{grid-template-columns:1fr}
+    .bar-row .nm{width:80px}
+    .diag-grid{grid-template-columns:1fr}
+    .diag-kpis{grid-template-columns:repeat(3,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== HEADER ===== -->
+  <header class="hd">
+    <div>
+      <h1><span class="dot"></span>短线选股分析日报</h1>
+      <div class="sub">财经宏观 · 板块资金 · 技术选股 全链路自动分析</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <span class="badge post">盘后复盘</span>
+      <div class="meta">
+        <b>2026-07-27 周一</b>
+        生成于 15:30 后 · 自动任务
+      </div>
+      <button class="btn-refresh" id="wbRefreshBtn" onclick="wbRefresh()" title="从服务器重新拉取最新报告">🔄 刷新</button>
+    </div>
+    <div class="sync-tip" id="wbSyncTip">点击「刷新」可强制从服务器获取最新版本</div>
+  </header>
+
+  <!-- ===== 首屏结论卡 ===== -->
+  <section class="sec">
+    <div class="sec-hd"><span class="no">◆</span><h2>今日核心结论</h2><span class="tag">一屏速览 · 07-27 收盘</span></div>
+    <div class="sec-bd">
+      <div class="kpis">
+        <div class="kpi"><div class="k">市场温度</div><div class="v up">高热 93°</div><div class="d">上涨5195 / 下跌286 · 涨停121 / 跌停7</div></div>
+        <div class="kpi"><div class="k">大盘状态</div><div class="v up">放量普涨</div><div class="d">上证 +1.15% · 两市2.08万亿(+1455亿)</div></div>
+        <div class="kpi"><div class="k">今日主线</div><div class="v acc">算力硬件+锂电</div><div class="d">电子布/元件/MLCC · 电池 · 脑机接口</div></div>
+        <div class="kpi"><div class="k">仓位参考</div><div class="v">6-7成</div><div class="d">普涨次日防分歧，逢低优于追高</div></div>
+      </div>
+      <div class="mkt-note" style="margin-top:14px">
+        <b>一句话结论：</b>长鑫科技超级 IPO 落地（首日+470%，市值3.3万亿登顶A股）+ 宁德时代 200-400 亿创纪录回购 + 美伊停火油价重挫 7%，
+        三重利好推动全市场近 5200 只个股普涨、成交放量至 2.08 万亿。情绪由修复转向亢奋，<span class="hl">次日重点观察放量后的分歧承接</span>：
+        主线（PCB/元件/锂电）回踩低吸优于集合竞价追高；油气链、高位半导体（资金被长鑫虹吸）短线回避。
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 模块1 财经与宏观 ===== -->
+  <section class="sec">
+    <div class="sec-hd"><span class="no">1</span><h2>财经与宏观速览</h2><span class="tag">10条要点 · 板块映射 · 前瞻研判</span></div>
+    <div class="sec-bd">
+      <ul class="news">
+        <li><span class="ic">讯</span><div class="bd"><p><b>长鑫科技科创板上市首日高开超470%</b>，<span>市值突破3.3万亿超越工商银行登顶A股，全天成交超1400亿创个股单日纪录；募资666亿为科创板史上最大IPO（07-27 收盘）。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 存储芯片 / DRAM产业链 / 半导体设备材料</span><span class="imp bad">利空</span><span class="imp-lb">→ 高位半导体个股（资金虹吸，兆易创新-5%、华虹跌近7%）</span></div></div></li>
+        <li><span class="ic">讯</span><div class="bd"><p><b>宁德时代拟200-400亿元回购注销，创A股单次回购纪录</b>，<span>叠加上半年净利预增42%、每10股派息14.11元，锂电产业链全天强势（07-26 晚公告）。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 锂电池 / 锂电材料 / 创业板权重</span></div></div></li>
+        <li><span class="ic macro">宏</span><div class="bd"><p><b>美伊暂停相互袭击，国际油价单日重挫约7%</b>，<span>WTI报83.65美元/桶、布油86.36美元/桶（07-27 14:20），现货黄金涨近1%报4092美元、白银涨超2%报59.4美元。</span></p>
+          <div class="tags"><span class="imp bad">利空</span><span class="imp-lb">→ 油气开采 / 油服（中曼石油等多股跌停）</span><span class="imp good">利好</span><span class="imp-lb">→ 航空机场 / 物流 / 化工成本链 / 贵金属</span></div></div></li>
+        <li><span class="ic macro">宏</span><div class="bd"><p><b>美联储FOMC决议北京时间7/30凌晨02:00公布</b>，<span>利率互换显示维持3.50%-3.75%不变概率约70%、加息概率约30%，核心看是否释放9月加息线索（券商观点，07-27）。</span></p>
+          <div class="tags"><span class="imp neu">中性</span><span class="imp-lb">→ 贵金属 / 成长科技波动放大，落地前防高位追涨</span></div></div></li>
+        <li><span class="ic macro">宏</span><div class="bd"><p><b>上半年规上工业企业利润同比+18.7%</b>，<span>制造业+20.1%、采矿业+33.5%，6月单月+15.1%，工业品价格回升带动盈利加速（国家统计局，07-27）。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 中游制造 / 装备机械 / 周期资源</span></div></div></li>
+        <li><span class="ic pol">政</span><div class="bd"><p><b>「两高」内幕交易新司法解释今日起施行</b>，<span>叠加证监会部署七方面稳市工作：加快养老金/险资等长线资金入市、从严规范AI高频量化交易（07-24 座谈会）。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 沪深300蓝筹 / 券商 / 市场生态长期改善</span></div></div></li>
+        <li><span class="ic pol">政</span><div class="bd"><p><b>「十五五」可再生能源顶层规划落地</b>，<span>发改委、能源局明确2030年风光装机与发电占比硬指标，重点扶持海风、钙钛矿光伏、储能、特高压（07-27 报道）。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 风电 / 储能 / 特高压 / 钙钛矿 / 绿电运营</span></div></div></li>
+        <li><span class="ic pol">政</span><div class="bd"><p><b>北京发布全国首个AI智能体算力专项补贴</b>，<span>新建智算中心单项目最高3000万、标杆AI智能体项目最高1亿，算力消费券向国产算力集群倾斜（07-23 发文）。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 国产算力 / 服务器 / 液冷 / IDC / 光模块</span></div></div></li>
+        <li><span class="ic">讯</span><div class="bd"><p><b>算力硬件业绩��现+锂电材料涨价共振</b>，<span>38家光通信公司已披露中报预告中18家预喜（占比超七成，截至07-24）；电解液添加剂VC均价破20万元/吨、月涨超40%（07-24 行业数据）。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ CPO/光模块 / PCB/CCL / 电解液材料</span></div></div></li>
+        <li><span class="ic">讯</span><div class="bd"><p><b>7月超370家公司实施回购，产业资本集体护盘</b>，<span>三一重工4-8亿回购预案、长源东谷/益丰药房等同步披露回购增持（07-24 晚间至周末）；本周美英日央行议息+微软/苹果/亚马逊/Meta及SK海力士、三星财报集中披露。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 蓝筹权重信心修复</span><span class="imp neu">中性</span><span class="imp-lb">→ 全球科技/存储链待财报验证</span></div></div></li>
+      </ul>
+
+      <!-- 板块影响小结 -->
+      <div class="impact-sum">
+        <div class="impact-box good">
+          <h4>▲ 消息面偏多板块</h4>
+          <div class="chip-line">
+            <span class="chip good">存储/DRAM链</span><span class="chip good">锂电池/材料</span>
+            <span class="chip good">PCB/CCL/元件</span><span class="chip good">国产算力/液冷</span>
+            <span class="chip good">风电/储能/特高压</span><span class="chip good">航空/化工成本链</span>
+          </div>
+          <div class="why">长鑫上市点燃存储链情绪 + 宁王史上最大回购锚定锂电 + 中报预喜与涨价函兑现业绩 + 「十五五」能源规划与北京算力补贴双政策催化，消息面密度显著偏多。</div>
+        </div>
+        <div class="impact-box bad">
+          <h4>▼ 消息面偏空板块</h4>
+          <div class="chip-line">
+            <span class="chip bad">油气开采/油服</span><span class="chip bad">高位半导体</span>
+            <span class="chip bad">大金融(短线)</span><span class="chip bad">燃油/航运化工品</span>
+          </div>
+          <div class="why">美伊停火致油价单日-7%直接打击油气链；长鑫超级IPO虹吸半导体存量资金；护盘属性的保险/银行/券商在普涨日反遭调仓卖出，短线走弱。</div>
+        </div>
+      </div>
+
+      <!-- 前瞻研判 -->
+      <div class="fw">
+        <h4>◈ 前瞻研判 · 未来一周关键催化（基于已公开日程）</h4>
+        <div class="fw-item"><span class="when">7/30 凌晨</span><span class="what"><b>美联储FOMC决议</b>（北京时间02:00），维持利率概率约70%；偏鸽则利好成长与贵金属，释放9月加息线索则压制风险偏好</span></div>
+        <div class="fw-item"><span class="when">7/30-7/31</span><span class="what"><b>日本央行、英国央行利率决议</b>先后公布，关注日元波动对全球流动性的扰动</span></div>
+        <div class="fw-item"><span class="when">本周盘后</span><span class="what"><b>微软/苹果/亚马逊/Meta财报</b> + SK海力士、三星电子、铠侠等存储巨头集中放榜，验证AI资本开支与存储涨价周期</span></div>
+        <div class="fw-item"><span class="when">7/30 晚间</span><span class="what"><b>美国6月PCE + 二季度GDP初值</b>，通胀与增长数据影响9月加息定价</span></div>
+        <div class="fw-item"><span class="when">7月末</span><span class="what"><b>中央政治局会议窗口（按惯例，时间待官宣）</b>，关注扩内需、资本市场与「十五五」衔接表述</span></div>
+        <div class="fw-item"><span class="when">8月起</span><span class="what"><b>中报密集披露期</b>，光通信/PCB/锂电预喜方向享确定性溢价，无业绩纯题材股防踩雷</span></div>
+        <div class="fw-item"><span class="when">持续跟踪</span><span class="what"><b>美伊局势演变</b>：停火若转化为外交突破则油价中枢下移；若反复则油气链波动剧烈</span></div>
+        <div class="fw-view"><b>前瞻结论：</b>本周为「FOMC+四大科技财报+存储巨头财报」三重验证窗口，存储链（长鑫映射+海外财报）与算力硬件（业绩预喜）催化密度最高，锂电受回购与涨价双托底；
+        油价回落利好航空、化工成本改善方向，油气链事件落地前不接飞刀。节奏上：<b>事件落地前（周一至周三）控制追高、以主线回踩低吸为主；FOMC 与科技财报落地后若无恶化，可提升进攻仓位。</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 模块2 热门板块与资金走向 ===== -->
+  <section class="sec">
+    <div class="sec-hd"><span class="no">2</span><h2>热门板块与资金走向</h2><span class="tag">07-27 收盘 · 资金驱动</span></div>
+    <div class="sec-bd">
+      <div class="bar-row"><span class="nm">玻璃玻纤</span><div class="bar-track"><div class="bar-fill up" style="width:96%">+9.65%（国际复材 20cm涨停）</div></div></div>
+      <div class="bar-row"><span class="nm">电子布(概念)</span><div class="bar-track"><div class="bar-fill up" style="width:92%">+9.23%</div></div></div>
+      <div class="bar-row"><span class="nm">元件(PCB/MLCC)</span><div class="bar-track"><div class="bar-fill up" style="width:64%">+6.25%（方邦股份/风华高科）</div></div></div>
+      <div class="bar-row"><span class="nm">陶瓷基板(概念)</span><div class="bar-track"><div class="bar-fill up" style="width:58%">+5.62%（三环集团）</div></div></div>
+      <div class="bar-row"><span class="nm">酒店餐饮</span><div class="bar-track"><div class="bar-fill up" style="width:54%">+5.27%（君亭酒店）</div></div></div>
+      <div class="bar-row"><span class="nm">化妆品</span><div class="bar-track"><div class="bar-fill up" style="width:52%">+5.12%（水羊股份）</div></div></div>
+      <div class="bar-row"><span class="nm">电池</span><div class="bar-track"><div class="bar-fill up" style="width:42%">+4.13%（主力净流入28.7亿）</div></div></div>
+      <div class="bar-row"><span class="nm">油气产业链</span><div class="bar-track"><div class="bar-fill down" style="width:40%">领跌 · 中曼石油/山东墨龙跌停</div></div></div>
+
+      <div class="flow">
+        <div class="flow-box">
+          <h4>行业主力资金净流入 TOP（07-27）</h4>
+          <div class="flow-item"><span>元件（PCB/被动元件）</span><span class="amt" style="color:var(--up)">+67.3亿</span></div>
+          <div class="flow-item"><span>玻璃玻纤（电子布）</span><span class="amt" style="color:var(--up)">+36.9亿</span></div>
+          <div class="flow-item"><span>电池（锂电链）</span><span class="amt" style="color:var(--up)">+28.7亿</span></div>
+        </div>
+        <div class="flow-box">
+          <h4>个股主力净流入 TOP（07-27）</h4>
+          <div class="flow-item"><span>通富微电（先进封装）</span><span class="amt" style="color:var(--up)">+24.2亿</span></div>
+          <div class="flow-item"><span>华天科技（封测）</span><span class="amt" style="color:var(--up)">+7.0亿</span></div>
+          <div class="flow-item"><span>中微公司（半导体设备）</span><span class="amt" style="color:var(--up)">+6.8亿</span></div>
+          <div class="flow-item"><span>深科技（存储配套）</span><span class="amt" style="color:var(--up)">+5.9亿</span></div>
+        </div>
+      </div>
+
+      <div class="mkt-note">
+        <b>情绪周期定位：高潮亢奋期（普涨加速段）。</b>上涨占比93%（过去一年仅16%交易日达到该热度）、涨停121家 vs 跌停7家，赚钱效应全面扩散；
+        指数层面创业板指+3.16%强于上证+1.15%，成长风格占优。<br>
+        <b>涨停梯队：</b>立新能源8天7板（电力/绿电最高标，当日盘面确认）、银星能源3天2板；截至上一交易日爱丽家居、长缆科技4连板，新能股份、五洲医疗3连板——高度板集中在电力与出口链，主线板块（PCB/锂电/医疗）以首板批量为主，梯队健康。<br>
+        <b>龙虎榜博弈：</b>机构净买集中在 PCB/元件方向——贤丰控股+1.23亿、红板科技+4814万、日科化学(3日)+2.5亿；游资「粉葛」「温州帮」「作手新一」活跃于魅视科技、中光防雷、光力科技；「东北猛男」净卖出1.29亿电力方向，高位电力股开始兑现。<br>
+        <b>次日方向研判：</b><span class="hl">P0 主线：PCB/元件/电子布（资金+业绩+涨价三重驱动）与锂电（回购锚定）；P1：存储链（长鑫映射+海外财报催化）、脑机接口/创新药；
+        P2：风光储能（政策落地待资金确认）；P3 回避：油气链、高位电力兑现段、被虹吸的高位半导体。</span>放量2.08万亿普涨后次日大概率高开分歧，回踩承接质量决定主线能否二波。
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 模块3 短线精选 ===== -->
+  <section class="sec">
+    <div class="sec-hd"><span class="no">3</span><h2>短线精选标的（次日 07-28）</h2><span class="tag">5支 · 强势追涨×3 + 回调低吸×2</span></div>
+    <div class="sec-bd">
+      <div class="picks">
+
+        <div class="pick dip">
+          <div class="pick-top">
+            <div class="pick-name"><span class="n">宁德时代</span><span class="c">300750</span>
+              <span class="pick-type dip">回调低吸</span></div>
+            <span class="stars">★★★★★</span>
+          </div>
+          <div class="pick-logic"><b>触发逻辑（S04 强势整理）：</b>A股史上最大回购（200-400亿注销式）+中报预增42%双催化，今日+4.44%收于400元整数关，量比1.30主力实质承接，近10日+11.4%趋势多头。回购托底使下方空间有限，属确定性最高的低吸标的。</div>
+          <div class="levels">
+            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">390–396</div></div>
+            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">424</div></div>
+            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">382</div></div>
+          </div>
+          <div class="pick-note">触发条件：回踩390-396（今日跳空缺口上沿/5日线）缩量企稳再介入；收盘跌破382（回补缺口并失守昨收383）离场，不追400上方冲高</div>
+        </div>
+
+        <div class="pick hot">
+          <div class="pick-top">
+            <div class="pick-name"><span class="n">三环集团</span><span class="c">300408</span>
+              <span class="pick-type hot">强势追涨</span></div>
+            <span class="stars">★★★★☆</span>
+          </div>
+          <div class="pick-logic"><b>触发逻辑（S03 封板次日跟踪）：</b>MLCC+陶瓷基板双主线核心，今日放量涨停+10.64%收111.57，成交79亿创阶段天量，换手仅3.96%未过热，60日+37%趋势强劲。板块（元件+6.25%、MLCC+5.33%）资金净流入67亿居全行业第一。</div>
+          <div class="levels">
+            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">107.0–110.5</div></div>
+            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">122.0</div></div>
+            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">103.8</div></div>
+          </div>
+          <div class="pick-note">触发条件：次日不追高开5%以上，回踩今日均价106.94上方企稳分批参与；分时跌破均价且收盘失守103.8（今日实体中枢）离场</div>
+        </div>
+
+        <div class="pick hot">
+          <div class="pick-top">
+            <div class="pick-name"><span class="n">风华高科</span><span class="c">000636</span>
+              <span class="pick-type hot">强势追涨</span></div>
+            <span class="stars">★★★★☆</span>
+          </div>
+          <div class="pick-logic"><b>触发逻辑（S03 封板次日跟踪）：</b>MLCC被动元件龙头今日涨停+10%收44.24，换手11.09%处于5-15%健康换手区间，量能与封板质量俱佳；元件板块59/60家上涨，板块效应极强，估值弹性大于三环。</div>
+          <div class="levels">
+            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">42.6–43.8</div></div>
+            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">48.5</div></div>
+            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">41.0</div></div>
+          </div>
+          <div class="pick-note">触发条件：回踩今日均价43.19附近承接有效再介入；若板块（元件指数）转弱或收盘跌破41.0（今日开盘缺口上沿）无条件离场</div>
+        </div>
+
+        <div class="pick dip">
+          <div class="pick-top">
+            <div class="pick-name"><span class="n">生益科技</span><span class="c">600183</span>
+              <span class="pick-type dip">回调低吸</span></div>
+            <span class="stars">★★★★☆</span>
+          </div>
+          <div class="pick-logic"><b>触发逻辑（S04+S07 强势回调/板块补涨）：</b>覆铜板(CCL)全球龙头，PCB主线业绩兑现核心方向（光通信中报预喜占比超七成），今日+6.13%收125.99，60日+66%强趋势，前10日缩量回调-6.3%后今日放量重启，属主线内「回调充分+重新启动」形态。</div>
+          <div class="levels">
+            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">120.5–123.5</div></div>
+            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">134.0</div></div>
+            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">117.5</div></div>
+          </div>
+          <div class="pick-note">触发条件：回踩今日均价120.84附近缩量企稳介入；收盘跌破117.5（失守昨收118.71并回补今日涨幅）离场，PCB板块退潮时同步减仓</div>
+        </div>
+
+        <div class="pick hot">
+          <div class="pick-top">
+            <div class="pick-name"><span class="n">国际复材</span><span class="c">301526</span>
+              <span class="pick-type hot">强势追涨</span></div>
+            <span class="stars">★★★☆☆</span>
+          </div>
+          <div class="pick-logic"><b>触发逻辑（S03 封板次日 · 20cm高弹性）：</b>电子布/玻纤最高辨识度龙头，今日20cm涨停收30.84，换手16.06%、成交64.7亿，玻璃玻纤行业+9.65%居全市场第一且板块16/16全红。情绪票弹性最大、风险同样最大，仅适合小仓位博弈。</div>
+          <div class="levels">
+            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">29.0–30.0</div></div>
+            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">35.0</div></div>
+            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">27.5</div></div>
+          </div>
+          <div class="pick-note">触发条件：仅在高开后回踩今日均价28.69上方且分时承接放量时小仓介入；炸板、分时跌破均价或收盘失守27.5立即离场，严禁重仓20cm情绪票</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 模块4 持仓诊断（交互，个股填写入口） ===== -->
+  <section class="sec">
+    <div class="sec-hd"><span class="no">4</span><h2>持仓诊断</h2><span class="tag">输入个股 · 即时测算买卖点</span></div>
+    <div class="sec-bd">
+      <div class="diag-grid">
+        <div class="diag-field">
+          <label>个股代码 / 名称</label>
+          <input id="d_code" placeholder="如 600519 / sh600519 / 贵州茅台">
+          <div class="hint">代码可点「自动获取」拉行情；名称请手动填当前价</div>
+        </div>
+        <div class="diag-field">
+          <label>当前价（元）</label>
+          <div class="price-row">
+            <input id="d_price" type="number" step="0.01" placeholder="自动获取或手动填">
+            <button class="btn-fetch" onclick="d_autoPrice()">自动获取</button>
+          </div>
+          <div class="hint">沙箱预览受限时请手动填价，本地浏览器可自动拉取</div>
+        </div>
+        <div class="diag-field">
+          <label>风险偏好</label>
+          <select id="d_risk">
+            <option value="conservative">保守（止损-5% / 止盈+8%）</option>
+            <option value="balance" selected>平衡（止损-7% / 止盈+12%）</option>
+            <option value="aggressive">激进（止损-10% / 止盈+20%）</option>
+          </select>
+        </div>
+        <div class="diag-field">
+          <label>持股股数（股）</label>
+          <input id="d_shares" type="number" step="1" placeholder="如 300">
+        </div>
+        <div class="diag-field">
+          <label>成本价（元/股）</label>
+          <input id="d_cost" type="number" step="0.001" placeholder="如 166.67">
+        </div>
+        <div class="diag-field">
+          <label>持股金额（元 · 自动计算）</label>
+          <input id="d_amount" type="number" readonly tabindex="-1" placeholder="股数 × 成本价 自动得出" style="opacity:.75;cursor:not-allowed">
+        </div>
+        <div class="diag-field">
+          <label>仓位占比（%，选填）</label>
+          <input id="d_pos" type="number" step="0.1" min="0.1" max="100" placeholder="如 30">
+          <div class="hint">本股占账户总资金的比例，填写后自动推算总资金</div>
+        </div>
+        <div class="diag-field">
+          <label>账户总资金（元 · 自动计算）</label>
+          <input id="d_total" type="number" readonly tabindex="-1" placeholder="持股金额 ÷ 仓位占比" style="opacity:.75;cursor:not-allowed">
+        </div>
+      </div>
+      <div class="diag-actions">
+        <button class="btn-primary" onclick="d_diagnose()">生成持仓诊断 →</button>
+        <button class="btn-ghost" onclick="d_reset()">清空</button>
+        <button class="btn-ghost" id="d_btnWatch" onclick="d_watchAddCurrent()" style="border-color:var(--gold);color:var(--gold)">＋ 加入价格监控</button>
+      </div>
+      <div id="diagStatus"></div>
+
+      <!-- 诊断结果（内联展开） -->
+      <div id="diagResult" class="diag-result">
+        <div class="diag-kpis">
+          <div class="diag-kpi"><div class="v" id="d_kCost" style="color:var(--gold)">—</div><div class="k">持仓成本价</div></div>
+          <div class="diag-kpi"><div class="v" id="d_kPrice">—</div><div class="k">当前价</div></div>
+          <div class="diag-kpi"><div class="v" id="d_kPnl">—</div><div class="k">浮动盈亏(元)</div></div>
+          <div class="diag-kpi"><div class="v" id="d_kRatio">—</div><div class="k">盈亏比例</div></div>
+          <div class="diag-kpi"><div class="v" id="d_kValue">—</div><div class="k">持仓市值(元)</div></div>
+          <div class="diag-kpi"><div class="v" id="d_kSignal">—</div><div class="k">综合评级</div></div>
+        </div>
+
+        <div class="diag-sub">持仓与成本结构</div>
+        <table class="diag-table">
+          <thead><tr><th>项目</th><th class="num">数值</th><th>说明</th></tr></thead>
+          <tbody id="d_struct"></tbody>
+        </table>
+
+        <div class="diag-sub">价位轴（止损 → 成本 → 当前 → 止盈）</div>
+        <div class="ladder"><div class="ladder-axis"></div><div id="d_ladder"></div></div>
+        <div class="diag-tip">止损(绿) · 成本(灰) · 当前价(金色高亮) · 止盈(红)</div>
+
+        <div class="diag-sub">操作建议（分级价位 + 触发条件）</div>
+        <table class="diag-table">
+          <thead><tr><th>动作</th><th>触发条件</th><th class="num">参考价位</th><th>仓位处理</th></tr></thead>
+          <tbody id="d_ops"></tbody>
+        </table>
+        <div class="diag-advice" id="d_advice"></div>
+      </div>
+
+      <!-- 价格监控清单（每小时检查 + 警戒线强提醒） -->
+      <div class="diag-sub" style="margin-top:18px">价格监控清单 <span style="font-size:11px;color:var(--tx3);font-weight:400">（每小时自动检查 · 触发止盈/止损警戒线时页面强提醒）</span></div>
+      <table class="diag-table">
+        <thead><tr><th>个股</th><th class="num">成本价</th><th class="num">最新价</th><th class="num">距止损</th><th class="num">距止盈①</th><th>状态</th><th>最近检查</th><th>操作</th></tr></thead>
+        <tbody id="d_watchBody"><tr><td colspan="8" style="color:var(--tx3)">暂无监控标的。生成持仓诊断后点「＋ 加入价格监控」即可。</td></tr></tbody>
+      </table>
+      <div class="diag-actions" style="margin-top:10px">
+        <button class="btn-ghost" onclick="d_watchCheckAll(true)">立即检查全部</button>
+        <span id="d_watchStatus" style="font-size:12px;color:var(--tx3);align-self:center"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 警戒线强提醒浮层 -->
+  <div id="d_alertMask" class="d-alert-mask">
+    <div class="d-alert-box">
+      <h3>⚠️ 价格警戒线触发提醒</h3>
+      <div id="d_alertList"></div>
+      <button class="d-alert-btn" onclick="d_alertDismiss()">我已知晓（今日该级别不再重复提醒）</button>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="foot">
+    <b>短线选股分析自动化 · 每交易日盘前 08:30 / 盘后 15:30 自动生成</b><br>
+    数据来源：财经新闻 / 宏观指标 / 行情资金结构化数据（综合消息面与盘面，数据时点 2026-07-27 收盘）<br>
+    连板梯队部分数据口径为截至上一交易日的结构化排行，已结合当日盘面消息交叉标注；个别未覆盖维度已如实注明。<br>
+    以上分析基于公开数据，仅供研究参考，<b>不构成任何投资建议</b>，据此操作风险自担。
+  </footer>
+
+</div>
+
+<script>
+// ================== 持仓诊断（内联交互） ==================
+function d_parseCode(raw){
+  if(!raw) return null;
+  let s = raw.trim().toUpperCase();
+  let m = s.match(/^(SH|SZ|BJ)(\d{4,6})$/);
+  if(m) return {prefix:m[1].toLowerCase(), code:m[2]};
+  m = s.match(/^(\d{4,6})\.(SH|SZ|BJ)$/);
+  if(m) return {prefix:m[2].toLowerCase(), code:m[1]};
+  m = s.match(/^(\d{4,6})$/);
+  if(m){
+    const c = m[1];
+    if(/^(60|68|9)/.test(c)) return {prefix:"sh", code:c};
+    else if(/^(00|30|3)/.test(c)) return {prefix:"sz", code:c};
+    else if(/^(8|4|920)/.test(c)) return {prefix:"bj", code:c};
+  }
+  return null; // 视为名称
+}
+function d_setStatus(msg, cls){ document.getElementById("diagStatus").innerHTML = msg? `<span class="${cls}">${msg}</span>`:""; }
+
+function d_fetchTencentPrice(tCode){
+  return new Promise((resolve,reject)=>{
+    const s = document.createElement("script");
+    s.src = "https://qt.gtimg.cn/q=" + tCode;
+    s.onload = function(){
+      const key = "v_" + tCode;
+      const data = window[key];
+      if(data && typeof data==="string"){
+        const p = data.split("~");
+        resolve({name:p[1]||"", code:p[2]||"", price:parseFloat(p[3])||0});
+      } else { reject(new Error("no data")); }
+      if(s.parentNode) s.parentNode.removeChild(s);
+    };
+    s.onerror = function(){ reject(new Error("load error")); if(s.parentNode) s.parentNode.removeChild(s); };
+    document.head.appendChild(s);
+  });
+}
+async function d_fetchLocalProxy(tCode){
+  try{
+    const r = await fetch("http://127.0.0.1:8765/quote/" + tCode, {method:"GET", mode:"cors"});
+    if(!r.ok) throw new Error("proxy " + r.status);
+    const j = await r.json();
+    if(j.ok && j.price>0) return {name:j.name||"", code:j.code||"", price:j.price};
+    throw new Error("proxy no data");
+  }catch(e){ throw e; }
+}
+let d_quoteName = "";
+async function d_autoPrice(){
+  const raw = document.getElementById("d_code").value;
+  if(!raw){ d_setStatus("请先填写个股代码或名称","diag-err"); return; }
+  d_setStatus("正在获取行情…","diag-load");
+  const pc = d_parseCode(raw);
+  if(!pc){ d_setStatus("请输入股票代码（如 688825 / sh688825），名称请手动填写当前价","diag-err"); return; }
+  const tCode = pc.prefix + pc.code;
+
+  try{
+    const res = await d_fetchLocalProxy(tCode);
+    if(res.price>0){
+      document.getElementById("d_price").value = res.price.toFixed(2);
+      d_quoteName = res.name || "";
+      d_setStatus("本地代理行情成功：" + res.name + " (" + res.code + ") " + res.price.toFixed(2) + " 元","diag-ok");
+      return;
+    }
+  }catch(e){}
+
+  try{
+    const res = await d_fetchTencentPrice(tCode);
+    if(res.price>0){
+      document.getElementById("d_price").value = res.price.toFixed(2);
+      d_quoteName = res.name || "";
+      d_setStatus("行情获取成功：" + res.name + " (" + res.code + ") " + res.price.toFixed(2) + " 元","diag-ok");
+      return;
+    }
+  }catch(e){}
+
+  d_setStatus("行情接口未返回。本地使用请先启动代理：python tools/quote_proxy.py；沙箱环境请手动填入当前价","diag-err");
+}
+
+const D_RISK = {
+  conservative:{ stop:-0.05, hard:-0.08, tp1:0.08, tp2:0.15, label:"保守" },
+  balance:     { stop:-0.07, hard:-0.10, tp1:0.12, tp2:0.25, label:"平衡" },
+  aggressive:  { stop:-0.10, hard:-0.15, tp1:0.20, tp2:0.40, label:"激进" }
+};
+function d_fmt(n,d=2){ return Number(n).toLocaleString("zh-CN",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function d_cls(v){ return v>=0 ? "var(--up)" : "var(--down)"; } // A股红涨绿跌：盈利红/亏损绿
+
+// 持股金额 = 股数 × 成本价（只读自动）；账户总资金 = 持股金额 ÷ 仓位占比（只读自动）
+function d_syncAmount(){
+  const s = parseFloat(document.getElementById("d_shares").value),
+        c = parseFloat(document.getElementById("d_cost").value);
+  document.getElementById("d_amount").value = (s>0 && c>0) ? (s*c).toFixed(2) : "";
+  d_syncTotal();
+}
+function d_syncTotal(){
+  const a = parseFloat(document.getElementById("d_amount").value),
+        p = parseFloat(document.getElementById("d_pos").value);
+  document.getElementById("d_total").value = (a>0 && p>0 && p<=100) ? (a/(p/100)).toFixed(0) : "";
+}
+document.getElementById("d_shares").addEventListener("input",d_syncAmount);
+document.getElementById("d_cost").addEventListener("input",d_syncAmount);
+document.getElementById("d_pos").addEventListener("input",d_syncTotal);
+
+function d_diagnose(){
+  const price  = parseFloat(document.getElementById("d_price").value);
+  const shares = parseFloat(document.getElementById("d_shares").value);
+  const costIn = parseFloat(document.getElementById("d_cost").value);
+  const pos    = parseFloat(document.getElementById("d_pos").value);
+  const riskKey= document.getElementById("d_risk").value;
+  const risk   = D_RISK[riskKey];
+  if(!(price>0)){ d_setStatus("请填写当前价（或点自动获取）","diag-err"); return; }
+  if(!(shares>0) || !(costIn>0)){ d_setStatus("请填写 持股股数 与 成本价","diag-err"); return; }
+  if(document.getElementById("d_pos").value && !(pos>0 && pos<=100)){ d_setStatus("仓位占比需在 0 ~ 100 之间","diag-err"); return; }
+
+  const amount = shares * costIn;                      // 持股金额自动计算
+  const total  = (pos>0 && pos<=100) ? amount/(pos/100) : NaN; // 总资金由仓位占比推算
+  const cost  = costIn;
+  const value = price * shares;
+  const pnl   = (price - cost) * shares;
+  const ratio = (price - cost) / cost;
+  const codeRaw = document.getElementById("d_code").value.trim() || "—";
+  const dispName = d_quoteName ? (d_quoteName + "（" + codeRaw + "）") : codeRaw;
+
+  // 信号判定
+  let signal, scolor;
+  if(price <= cost*(1+risk.hard)){ signal="止损离场"; scolor="var(--down)"; }
+  else if(price <= cost*(1+risk.stop)){ signal="减仓警戒"; scolor="var(--gold)"; }
+  else if(price < cost*(1+risk.tp1)){ signal="持有观察"; scolor="var(--acc)"; }
+  else if(price < cost*(1+risk.tp2)){ signal="分批止盈"; scolor="var(--up)"; }
+  else { signal="获利了结"; scolor="var(--up)"; }
+
+  // KPI
+  document.getElementById("d_kCost").textContent  = d_fmt(cost);
+  const kP = document.getElementById("d_kPrice"); kP.textContent = d_fmt(price); kP.style.color = d_cls(price-cost);
+  const kL = document.getElementById("d_kPnl");   kL.textContent = (pnl>=0?"+":"") + d_fmt(pnl,0); kL.style.color = d_cls(pnl);
+  const kR = document.getElementById("d_kRatio"); kR.textContent = (ratio>=0?"+":"") + (ratio*100).toFixed(2) + "%"; kR.style.color = d_cls(pnl);
+  document.getElementById("d_kValue").textContent = d_fmt(value,0);
+  const kS = document.getElementById("d_kSignal"); kS.textContent = signal; kS.style.color = scolor;
+
+  // 持仓与成本结构
+  let struct = [
+    ["持股金额", d_fmt(amount,0)+" 元", "股数 × 成本价（自动计算）"],
+    ["持股股数", d_fmt(shares,0)+" 股", "（用户填写）"],
+    ["持仓成本价", d_fmt(cost)+" 元", "（用户填写）"],
+    ["当前市值", d_fmt(value,0)+" 元", "当前价 × 股数"],
+    ["浮动盈亏", (pnl>=0?"+":"")+d_fmt(pnl,0)+" 元", "相对成本 "+(ratio>=0?"+":"")+(ratio*100).toFixed(2)+"%", d_cls(pnl)]
+  ];
+  if(total>0){
+    struct.push(["仓位占比", pos.toFixed(1)+"%", d_posComment(pos/100)]);
+    struct.push(["账户总资金", d_fmt(total,0)+" 元", "持股金额 ÷ 仓位占比（自动推算）"]);
+  }
+  document.getElementById("d_struct").innerHTML = struct.map(r=>
+    `<tr><td>${r[0]}</td><td class="num"${r[3]?` style="color:${r[3]}"`:""}>${r[1]}</td><td style="color:var(--tx3)">${r[2]}</td></tr>`
+  ).join("");
+
+  // 价位轴
+  const levels = [
+    {key:"hard", name:"强止损", r:risk.hard},
+    {key:"stop", name:"止损",   r:risk.stop},
+    {key:"cost", name:"成本价", r:0},
+    {key:"now",  name:"当前价", r:ratio},
+    {key:"tp1",  name:"止盈①",  r:risk.tp1},
+    {key:"tp2",  name:"止盈②",  r:risk.tp2}
+  ];
+  const prices = levels.map(l=> cost*(1+l.r));
+  const lo = Math.min(...prices), hi = Math.max(...prices);
+  const span = hi-lo || 1;
+  document.getElementById("d_ladder").innerHTML = levels.map(l=>{
+    const p = cost*(1+l.r);
+    const x = 6 + ((p-lo)/span)*88; // 留边防标签溢出
+    let color = "var(--tx3)";
+    if(l.key==="now") color = "var(--gold)";
+    else if(l.r<0) color = "var(--down)";   // 止损区（低于成本）绿
+    else if(l.r>0) color = "var(--up)";     // 止盈区（高于成本）红
+    return `<div class="pt ${l.key==='now'?'now':''}" style="left:${x}%;background:${color};">
+      <div class="lbl" style="color:${color}">${l.name}</div>
+      <div class="val">${d_fmt(p)}</div></div>`;
+  }).join("");
+
+  // 操作建议表
+  const pHard=cost*(1+risk.hard), pStop=cost*(1+risk.stop), pTp1=cost*(1+risk.tp1), pTp2=cost*(1+risk.tp2);
+  const ops = [
+    {tag:"add",  n:"加仓", c:`回踩成本价 ${d_fmt(cost)} 附近缩量企稳（仓位未满时）`, p:d_fmt(cost), h:"分批低吸，控制节奏"},
+    {tag:"hold", n:"持有", c:`在 ${d_fmt(pStop)} – ${d_fmt(pTp1)} 区间内运行`, p:`${d_fmt(pStop)}–${d_fmt(pTp1)}`, h:"不动，跟踪量能"},
+    {tag:"cut",  n:"减仓", c:`触及止盈① ${d_fmt(pTp1)}（+${(risk.tp1*100).toFixed(0)}%）放量滞涨`, p:d_fmt(pTp1), h:"减 1/2 仓，锁利润"},
+    {tag:"cut",  n:"止盈", c:`到达止盈② ${d_fmt(pTp2)}（+${(risk.tp2*100).toFixed(0)}%）`, p:d_fmt(pTp2), h:"了结大部分仓位"},
+    {tag:"out",  n:"止损", c:`跌破止损线 ${d_fmt(pStop)}（${(risk.stop*100).toFixed(0)}%）警戒；跌破强止损 ${d_fmt(pHard)} 必须执行`, p:d_fmt(pHard), h:"清仓离场，纪律底线"}
+  ];
+  document.getElementById("d_ops").innerHTML = ops.map(o=>
+    `<tr><td><span class="op-tag ${o.tag}">${o.n}</span></td><td>${o.c}</td><td class="num">${o.p}</td><td style="color:var(--tx3)">${o.h}</td></tr>`
+  ).join("");
+
+  // 综合建议
+  const dev = (ratio*100).toFixed(2);
+  let extra = "";
+  if(price < cost && ratio>=-0.07 && ratio<=-0.03 && riskKey!=="conservative"){
+    extra = ` 当前价低于成本 ${Math.abs(ratio*100).toFixed(2)}%，处于可分批低吸降本区间，需预留现金并控制加仓节奏。`;
+  }
+  if(total>0){
+    const pct = amount/total;
+    if(pct>0.3) extra += ` 单票仓位 ${(pct*100).toFixed(1)}% 偏重，注意集中度风险。`;
+  }
+  document.getElementById("d_advice").innerHTML =
+    `<b>综合诊断（${dispName}）：</b>当前价相对成本 ${dev>=0?"浮盈":"浮亏"} ${Math.abs(dev)}%，主信号为「<b>${signal}</b>」（${risk.label}档）。` +
+    `强止损位 ${d_fmt(pHard)} 为纪律底线，跌破必须执行；止盈① ${d_fmt(pTp1)} 起可分批兑现利润。${extra}`;
+
+  // 记录本次诊断（供“加入价格监控”与缓存使用）
+  const pc0 = d_parseCode(codeRaw);
+  window.__d_lastDiag = {
+    codeRaw, tCode: pc0 ? (pc0.prefix + pc0.code) : "",
+    name: d_quoteName || codeRaw,
+    cost, shares, riskKey, pos: (pos>0?pos:null), lastPrice: price,
+    levels: { hard: cost*(1+risk.hard), stop: cost*(1+risk.stop), tp1: cost*(1+risk.tp1), tp2: cost*(1+risk.tp2) }
+  };
+  d_saveFormCache();
+
+  // 展开结果并滚动定位
+  d_setStatus("");
+  const box = document.getElementById("diagResult");
+  box.classList.add("show");
+  box.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function d_posComment(pct){
+  if(pct>0.5) return "单票仓位过重，集中度风险高";
+  if(pct>0.3) return "单票仓位偏重";
+  if(pct>0.15) return "单票仓位适中";
+  return "单票仓位较轻";
+}
+function d_reset(){
+  ["d_code","d_price","d_amount","d_shares","d_cost","d_pos","d_total"].forEach(id=>document.getElementById(id).value="");
+  d_quoteName = "";
+  d_setStatus("");
+  document.getElementById("diagResult").classList.remove("show");
+  try{ localStorage.removeItem(D_FORM_KEY); }catch(e){}
+}
+
+// ================== 页面缓存（localStorage，与独立工具共享键） ==================
+const D_FORM_KEY  = "wb_diag_form_v1";
+const D_WATCH_KEY = "wb_diag_watch_v1";
+function d_saveFormCache(){
+  try{
+    const o = {
+      code: document.getElementById("d_code").value,
+      price: document.getElementById("d_price").value,
+      shares: document.getElementById("d_shares").value,
+      cost: document.getElementById("d_cost").value,
+      pos: document.getElementById("d_pos").value,
+      risk: document.getElementById("d_risk").value,
+      quoteName: d_quoteName
+    };
+    localStorage.setItem(D_FORM_KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function d_loadFormCache(){
+  try{
+    const o = JSON.parse(localStorage.getItem(D_FORM_KEY)||"null");
+    if(!o) return;
+    if(o.code)   document.getElementById("d_code").value=o.code;
+    if(o.price)  document.getElementById("d_price").value=o.price;
+    if(o.shares) document.getElementById("d_shares").value=o.shares;
+    if(o.cost)   document.getElementById("d_cost").value=o.cost;
+    if(o.pos)    document.getElementById("d_pos").value=o.pos;
+    if(o.risk)   document.getElementById("d_risk").value=o.risk;
+    d_quoteName = o.quoteName||"";
+    d_syncAmount();
+    if(o.code) d_setStatus("已恢复上次缓存的持仓参数","diag-ok");
+  }catch(e){}
+}
+
+// ================== 价格监控（每小时） + 警戒线强提醒 ==================
+const D_CHECK_MS = 60*60*1000;
+function d_watchLoad(){ try{ return JSON.parse(localStorage.getItem(D_WATCH_KEY)||"[]"); }catch(e){ return []; } }
+function d_watchSave(l){ try{ localStorage.setItem(D_WATCH_KEY, JSON.stringify(l)); }catch(e){} }
+function d_todayStr(){ const t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
+function d_watchAddCurrent(){
+  const d = window.__d_lastDiag;
+  if(!d){ d_setStatus("请先生成持仓诊断，再加入监控","diag-err"); return; }
+  if(!d.tCode){ d_setStatus("该标的未识别出股票代码，无法自动监控（请用代码重新诊断）","diag-err"); return; }
+  const list = d_watchLoad();
+  const i = list.findIndex(x=>x.tCode===d.tCode);
+  const entry = { ...d, addedAt: Date.now(), lastCheck: null, lastStatus: "待检查", alerted: {} };
+  if(i>=0) list[i]=entry; else list.push(entry);
+  d_watchSave(list);
+  d_renderWatch();
+  const b=document.getElementById("d_btnWatch");
+  b.textContent="✓ 已加入监控"; setTimeout(()=>b.textContent="＋ 加入价格监控",2500);
+  try{ if(Notification && Notification.permission==="default") Notification.requestPermission(); }catch(e){}
+  d_watchCheckAll(false);
+}
+function d_watchRemove(tCode){ d_watchSave(d_watchLoad().filter(x=>x.tCode!==tCode)); d_renderWatch(); }
+function d_judgeLevel(e, price){
+  const L=e.levels;
+  if(price<=L.hard) return {key:"hard", cls:"down", label:"⛔ 触发强止损 "+d_fmt(L.hard), strong:true};
+  if(price<=L.stop) return {key:"stop", cls:"down", label:"⚠ 触发止损警戒 "+d_fmt(L.stop), strong:true};
+  if(price>=L.tp2)  return {key:"tp2",  cls:"up",   label:"🎯 到达止盈② "+d_fmt(L.tp2), strong:true};
+  if(price>=L.tp1)  return {key:"tp1",  cls:"up",   label:"🎯 到达止盈① "+d_fmt(L.tp1), strong:true};
+  if(price<=L.stop*1.02) return {key:"nearStop", cls:"warn", label:"接近止损线", strong:false};
+  if(price>=L.tp1*0.98)  return {key:"nearTp",   cls:"warn", label:"接近止盈①", strong:false};
+  return {key:"ok", cls:"ok", label:"区间内正常", strong:false};
+}
+async function d_watchCheckAll(manual){
+  const list = d_watchLoad();
+  const st = document.getElementById("d_watchStatus");
+  if(!list.length){ if(manual && st) st.textContent="监控清单为空"; return; }
+  if(st) st.textContent="正在检查行情…";
+  const triggers = [];
+  for(const e of list){
+    try{
+      const res = await d_fetchTencentPrice(e.tCode);
+      if(res.price>0){
+        e.lastPrice = res.price;
+        if(res.name) e.name = res.name;
+        const j = d_judgeLevel(e, res.price);
+        e.lastStatus=j.label; e.lastCls=j.cls; e.lastCheck=Date.now();
+        const dkey = j.key+"@"+d_todayStr();
+        if(j.strong && !e.alerted[dkey]){ e.alerted[dkey]=1; triggers.push({e,j,price:res.price}); }
+      } else { e.lastStatus="行情未返回"; e.lastCls="err"; e.lastCheck=Date.now(); }
+    }catch(err){ e.lastStatus="行情未返回（网络受限）"; e.lastCls="err"; e.lastCheck=Date.now(); }
+  }
+  d_watchSave(list);
+  d_renderWatch();
+  if(st) st.textContent="最近检查："+new Date().toLocaleTimeString("zh-CN")+"（每小时自动检查一次）";
+  if(triggers.length) d_fireAlert(triggers);
+}
+function d_renderWatch(){
+  const list = d_watchLoad();
+  const tb = document.getElementById("d_watchBody");
+  if(!tb) return;
+  if(!list.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--tx3)">暂无监控标的。生成持仓诊断后点「＋ 加入价格监控」即可。</td></tr>'; return; }
+  tb.innerHTML = list.map(e=>{
+    const px=e.lastPrice||0, L=e.levels;
+    const dStop = px>0 ? ((px-L.stop)/px*100).toFixed(1)+"%" : "—";
+    const dTp1  = px>0 ? ((L.tp1-px)/px*100).toFixed(1)+"%" : "—";
+    const t = e.lastCheck ? new Date(e.lastCheck).toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}) : "—";
+    return `<tr>
+      <td><b>${e.name}</b><br><span style="color:var(--tx3);font-size:11px">${e.tCode}</span></td>
+      <td class="num">${d_fmt(e.cost)}</td>
+      <td class="num" style="color:${px>=e.cost?'var(--up)':'var(--down)'}">${px>0?d_fmt(px):"—"}</td>
+      <td class="num">${dStop}</td><td class="num">${dTp1}</td>
+      <td><span class="d-chip ${e.lastCls||'err'}">${e.lastStatus||"待检查"}</span></td>
+      <td style="color:var(--tx3);font-size:12px">${t}</td>
+      <td><button class="d-wbtn" onclick="d_watchRemove('${e.tCode}')">移除</button></td>
+    </tr>`;
+  }).join("");
+}
+let d_titleTimer=null;
+function d_fireAlert(triggers){
+  document.getElementById("d_alertList").innerHTML = triggers.map(t=>{
+    const dir = t.j.cls==="up" ? "止盈" : "止损";
+    return `<div class="d-alert-item ${t.j.cls}"><b>${t.e.name}（${t.e.tCode}）</b>　最新价 <b>${d_fmt(t.price)}</b><br>
+      ${t.j.label} —— 请按纪律执行${dir}计划（成本 ${d_fmt(t.e.cost)}，${t.j.cls==="up"?"建议分批兑现利润":"跌破强止损必须离场"}）</div>`;
+  }).join("");
+  document.getElementById("d_alertMask").classList.add("show");
+  d_beep();
+  if(!d_titleTimer){
+    const orig=document.title; let on=false;
+    d_titleTimer=setInterval(()=>{ document.title=(on=!on)?"🔴 警戒线触发！":orig; },900);
+  }
+  try{
+    if(Notification && Notification.permission==="granted"){
+      triggers.forEach(t=> new Notification("持仓警戒提醒："+t.e.name, {body:t.j.label+" · 最新价 "+d_fmt(t.price)}));
+    }
+  }catch(e){}
+}
+function d_alertDismiss(){
+  document.getElementById("d_alertMask").classList.remove("show");
+  if(d_titleTimer){ clearInterval(d_titleTimer); d_titleTimer=null; }
+}
+function d_beep(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [0,.35,.7].forEach(t0=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value=880; g.gain.setValueAtTime(.25,ctx.currentTime+t0);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t0+.3);
+      o.start(ctx.currentTime+t0); o.stop(ctx.currentTime+t0+.3);
+    });
+  }catch(e){}
+}
+// 初始化：恢复缓存 → 渲染监控清单 → 开机检查一次 → 每小时自动检查
+d_loadFormCache();
+d_renderWatch();
+d_watchCheckAll(false);
+setInterval(()=>d_watchCheckAll(false), D_CHECK_MS);
+
+// ================== 公网页手动刷新（强制绕过缓存拉取最新报告） ==================
+function wbRefresh(){
+  var btn=document.getElementById('wbRefreshBtn');
+  var tip=document.getElementById('wbSyncTip');
+  if(btn){btn.disabled=true;btn.textContent='⟳ 刷新中…';}
+  if(tip){tip.textContent='正在从服务器重新拉取…';}
+  try{ sessionStorage.removeItem('wb_gate_ok'); }catch(e){}
+  var base=location.href.split('?')[0].split('#')[0];
+  var bust=base+(base.indexOf('?')<0?'?':'&')+'_t='+Date.now();
+  fetch(bust,{method:'HEAD',cache:'no-store',headers:{'Cache-Control':'no-store'}})
+    .then(function(r){ window.location.replace(bust); })
+    .catch(function(){ window.location.reload(true); });
+}
+(function(){
+  var tip=document.getElementById('wbSyncTip');
+  if(tip && !tip.dataset.bound){
+    var t=new Date();
+    var hh=('0'+t.getHours()).slice(-2), mm=('0'+t.getMinutes()).slice(-2);
+    tip.textContent='本页载入于 '+hh+':'+mm+' · 内容以服务器最新报告为准';
+    tip.dataset.bound='1';
+  }
+})();
+</script>
+</body>
+</html>

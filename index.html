@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>短线选股分析 · 私密工作台</title>
+<style>
+  :root{--bg:#0b0e14;--card:#131722;--bd:#232a3b;--tx:#e8ecf4;--tx2:#9aa4b8;--tx3:#5c6478;--red:#f6465d;--gold:#f0b90b;--blue:#4c8dff;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei","PingFang SC",sans-serif;}
+  body{background:#0b0e14;color:#e8ecf4;min-height:100vh;}
+  .wrap{max-width:720px;margin:0 auto;padding:48px 20px;}
+  .hd{text-align:center;margin-bottom:36px;}
+  .hd h1{font-size:26px;letter-spacing:1px;}
+  .hd p{color:#9aa4b8;font-size:13px;margin-top:8px;}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  a.card{display:block;background:#131722;border:1px solid #232a3b;border-radius:14px;padding:26px 22px;text-decoration:none;color:#e8ecf4;transition:.2s;}
+  a.card:hover{border-color:#f0b90b;transform:translateY(-2px);}
+  .card .ic{font-size:30px;}
+  .card h2{font-size:17px;margin:12px 0 6px;}
+  .card p{font-size:12.5px;color:#9aa4b8;line-height:1.7;}
+  .card .tag{display:inline-block;margin-top:12px;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid #232a3b;color:#f0b90b;}
+  .note{margin-top:28px;background:#131722;border:1px solid #232a3b;border-radius:12px;padding:16px 18px;font-size:12px;color:#9aa4b8;line-height:1.9;}
+  .note b{color:#e8ecf4;}
+  .foot{text-align:center;color:#5c6478;font-size:11px;margin-top:32px;line-height:1.8;}
+  @media(max-width:560px){.cards{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd">
+    <h1>📈 短线选股分析 · 工作台</h1>
+    <p>私密使用 · 数据仅供参考，不构成投资建议</p>
+  </div>
+  <div class="cards">
+    <a class="card" href="daily.html">
+      <div class="ic">📰</div>
+      <h2>选股分析日报</h2>
+      <p>财经宏观速览 · 热门板块与资金走向 · 短线精选标的 · 内嵌持仓诊断</p>
+      <span class="tag">每交易日 盘前/盘后 更新</span>
+    </a>
+    <a class="card" href="tool.html">
+      <div class="ic">🩺</div>
+      <h2>持仓诊断工具</h2>
+      <p>输入 代码 + 股数 + 成本价，即时测算盈亏、止盈止损与分级操作建议，支持价格监控警戒提醒</p>
+      <span class="tag">随时可用</span>
+    </a>
+  </div>
+  <div class="note">
+    <b>使用提示</b><br>
+    ① 公网环境下「自动获取」行情走腾讯财经接口，一般可直接使用；失败时手动填当前价即可。<br>
+    ② 价格监控在页面打开期间运行，触发止盈/止损警戒线会全屏强提醒。<br>
+    ③ 本站已设访问口令，链接请勿公开传播，仅限自用。
+  </div>
+  <div class="foot">Easycare · Herman 私人工作台<br>以上分析基于公开数据，不构成投资建议</div>
+</div>
+
+<!-- ===== WB 私密访问门禁 ===== -->
+<div id="wbGate" style="position:fixed;inset:0;z-index:2147483647;background:#0b0e14;display:flex;align-items:center;justify-content:center;font-family:'Microsoft YaHei','PingFang SC',sans-serif;">
+  <div style="width:320px;max-width:88vw;background:#131722;border:1px solid #232a3b;border-radius:16px;padding:34px 28px;text-align:center;">
+    <div style="font-size:34px;">🔒</div>
+    <div style="color:#e8ecf4;font-size:17px;font-weight:700;margin:12px 0 4px;">私密访问</div>
+    <div style="color:#9aa4b8;font-size:12px;margin-bottom:18px;">请输入访问口令</div>
+    <input id="wbGateInput" type="password" placeholder="访问口令" autocomplete="off"
+      style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #232a3b;background:#0b0e14;color:#e8ecf4;font-size:14px;outline:none;">
+    <button id="wbGateBtn"
+      style="width:100%;margin-top:12px;padding:11px 0;border:none;border-radius:10px;background:#f0b90b;color:#111;font-size:14px;font-weight:700;cursor:pointer;">进 入</button>
+    <div id="wbGateMsg" style="color:#f6465d;font-size:12px;margin-top:10px;min-height:16px;"></div>
+    <div style="color:#5c6478;font-size:10.5px;margin-top:14px;line-height:1.7;">仅限授权使用 · 内容不构成投资建议</div>
+  </div>
+</div>
+<script>
+(function(){
+  var HASH="15f615593dbecae0dc6730ea27fb9365658ab3cb05a3e499e8fff35b2deea1c8";
+  var gate=document.getElementById("wbGate");
+  if(sessionStorage.getItem("wb_gate_ok")==="1"){gate.style.display="none";return;}
+  document.documentElement.style.overflow="hidden";
+  function pass(){sessionStorage.setItem("wb_gate_ok","1");gate.style.display="none";document.documentElement.style.overflow="";}
+  function fail(m){document.getElementById("wbGateMsg").textContent=m||"口令错误，请重试";}
+  async function check(){
+    var v=document.getElementById("wbGateInput").value||"";
+    if(!v){fail("请输入口令");return;}
+    if(window.crypto&&crypto.subtle){
+      try{
+        var buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));
+        var hex=Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0");}).join("");
+        if(hex===HASH){pass();}else{fail();}
+        return;
+      }catch(e){}
+    }
+    fail("当前环境不支持校验，请使用 HTTPS 打开");
+  }
+  document.getElementById("wbGateBtn").addEventListener("click",check);
+  document.getElementById("wbGateInput").addEventListener("keydown",function(e){if(e.key==="Enter")check();});
+})();
+</script>
+<!-- ===== /WB 门禁 ===== -->
+
+</body>
+</html>

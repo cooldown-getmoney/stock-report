@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>持仓诊断 · A股</title>
+<style>
+  :root{
+    --bg:#0e1117; --card:#161b22; --card2:#1c2230; --border:#2a2f3a;
+    --text:#e6edf3; --muted:#8b949e; --red:#f6465d; --green:#2ebd85;
+    --gold:#e3a008; --blue:#3b82f6; --orange:#f59e0b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.55;padding:26px;max-width:1000px;margin:0 auto;}
+  .header{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;}
+  .header h1{font-size:23px;font-weight:700;}
+  .header .sub{color:var(--muted);font-size:13px;margin-top:6px;}
+  .badge{background:linear-gradient(135deg,#e3a008,#f59e0b);color:#1a1205;font-size:13px;font-weight:700;padding:5px 14px;border-radius:20px;white-space:nowrap;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+  .card h2{font-size:16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .card h2 .bar{width:4px;height:16px;background:var(--gold);border-radius:2px;}
+  /* 输入页 */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .field input,.field select{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;}
+  .field input:focus,.field select:focus{border-color:var(--gold);}
+  .field .hint{font-size:11px;color:var(--muted);margin-top:4px;}
+  .row{display:flex;gap:10px;align-items:flex-end;margin-top:16px;}
+  .btn{flex:1;background:linear-gradient(135deg,#e3a008,#f59e0b);color:#1a1205;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn.ghost{flex:0 0 auto;background:var(--card2);color:var(--text);border:1px solid var(--border);font-size:14px;font-weight:600;padding:12px 18px;}
+  .price-row{display:flex;gap:8px;align-items:center;}
+  .price-row input{flex:1;}
+  #fetchPrice{flex:0 0 auto;background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;cursor:pointer;white-space:nowrap;}
+  #fetchPrice:hover{border-color:var(--gold);}
+  #status{font-size:12px;margin-top:8px;min-height:14px;}
+  .ok{color:var(--green);} .err{color:var(--red);} .load{color:var(--gold);}
+  /* 报告页 */
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+  .kpi{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;}
+  .kpi .v{font-size:17px;font-weight:700;}
+  .kpi .k{font-size:11px;color:var(--muted);margin-top:4px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;font-size:12px;}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;}
+  .tag.hold{background:rgba(59,130,246,.15);color:var(--blue);}
+  .tag.add{background:rgba(46,189,133,.15);color:var(--green);}
+  .tag.cut{background:rgba(245,158,11,.15);color:var(--orange);}
+  .tag.out{background:rgba(246,70,93,.15);color:var(--red);}
+  .advice{background:var(--card2);border-left:3px solid var(--gold);border-radius:8px;padding:14px 16px;font-size:14px;margin-top:14px;}
+  .advice b{color:var(--gold);}
+  .ladder{position:relative;height:78px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin:6px 0 8px;overflow:hidden;}
+  .axis{position:absolute;left:0;right:0;top:50%;height:2px;background:var(--border);}
+  .pt{position:absolute;top:50%;transform:translateX(-50%);width:2px;height:42px;margin-top:-21px;}
+  .pt .lbl{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:10px;white-space:nowrap;}
+  .pt .val{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;white-space:nowrap;color:var(--muted);}
+  .pt.now{width:3px;height:54px;margin-top:-27px;z-index:3;}
+  .pt.now .lbl{font-weight:800;font-size:11px;}
+  .disclaimer{font-size:11px;color:var(--muted);margin-top:18px;border-top:1px dashed var(--border);padding-top:12px;line-height:1.7;}
+  .backbar{display:flex;gap:10px;margin-bottom:16px;}
+  .page{display:none;}
+  .page.active{display:block;}
+  /* ===== 价格监控与警戒提醒 ===== */
+  .chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap;}
+  .chip.ok{background:rgba(59,130,246,.12);color:var(--blue);}
+  .chip.warn{background:rgba(245,158,11,.15);color:var(--orange);}
+  .chip.up{background:rgba(246,70,93,.18);color:var(--red);}
+  .chip.down{background:rgba(46,189,133,.18);color:var(--green);}
+  .chip.err{background:rgba(139,148,158,.15);color:var(--muted);}
+  .wbtn{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;margin-right:6px;}
+  .wbtn:hover{border-color:var(--gold);}
+  .alert-mask{position:fixed;inset:0;background:rgba(5,7,12,.8);z-index:99;display:none;align-items:center;justify-content:center;padding:20px;}
+  .alert-mask.show{display:flex;}
+  .alert-box{background:var(--card);border:2px solid var(--red);border-radius:14px;max-width:560px;width:100%;padding:24px;animation:alarm 1s infinite;}
+  @keyframes alarm{0%,100%{box-shadow:0 0 0 0 rgba(246,70,93,.55);}50%{box-shadow:0 0 0 16px rgba(246,70,93,0);}}
+  .alert-box h3{font-size:19px;color:var(--red);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .alert-item{background:var(--card2);border-left:3px solid var(--red);border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:14px;line-height:1.7;}
+  .alert-item.up{border-left-color:var(--red);}
+  .alert-item.down{border-left-color:var(--green);}
+  .alert-btn{width:100%;background:linear-gradient(135deg,#e3a008,#f59e0b);color:#1a1205;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;}
+  @media(max-width:760px){.grid{grid-template-columns:1fr;}.kpis{grid-template-columns:repeat(3,1fr);}}
+</style>
+</head>
+<body>
+
+<!-- ========== 第 1 页：填写参数 ========== -->
+<div id="page-input" class="page active">
+  <div class="header">
+    <div>
+      <h1>持仓诊断</h1>
+      <div class="sub">填写 个股代码/名称 + 股数 + 成本价（金额自动算），可选填仓位占比推算总资金，生成后自动跳转诊断报告页</div>
+    </div>
+    <span class="badge">A股 · 自助</span>
+  </div>
+
+  <div class="card">
+    <h2><span class="bar"></span>持仓参数</h2>
+    <div class="grid">
+      <div class="field">
+        <label>个股代码 / 名称</label>
+        <input id="code" placeholder="如 600519 / sh600519 / 600519.SH / 贵州茅台">
+        <div class="hint">代码可自动拉行情；填名称时请手动填当前价</div>
+      </div>
+      <div class="field">
+        <label>当前价（元）</label>
+        <div class="price-row">
+          <input id="price" type="number" step="0.01" placeholder="自动获取或手动填">
+          <button id="fetchPrice" onclick="autoPrice()">自动获取</button>
+        </div>
+        <div class="hint">留空点「自动获取」将尝试拉实时行情</div>
+      </div>
+      <div class="field">
+        <label>持股股数（股）</label>
+        <input id="shares" type="number" step="1" placeholder="如 300">
+      </div>
+      <div class="field">
+        <label>成本价（元/股）</label>
+        <input id="cost" type="number" step="0.001" placeholder="如 166.67">
+      </div>
+      <div class="field">
+        <label>持股金额（元 · 自动计算）</label>
+        <input id="amount" type="number" readonly tabindex="-1" placeholder="股数 × 成本价 自动得出" style="opacity:.75;cursor:not-allowed">
+      </div>
+      <div class="field">
+        <label>风险偏好</label>
+        <select id="risk">
+          <option value="conservative">保守（止损-5% / 止盈+8%）</option>
+          <option value="balance" selected>平衡（止损-7% / 止盈+12%）</option>
+          <option value="aggressive">激进（止损-10% / 止盈+20%）</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>仓位占比（%，选填）</label>
+        <input id="pos" type="number" step="0.1" min="0.1" max="100" placeholder="如 30">
+        <div class="hint">本股占账户总资金的比例，填写后自动推算总资金</div>
+      </div>
+      <div class="field">
+        <label>账户总资金（元 · 自动计算）</label>
+        <input id="total" type="number" readonly tabindex="-1" placeholder="持股金额 ÷ 仓位占比" style="opacity:.75;cursor:not-allowed">
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="diagnose()">生成诊断报告 →</button>
+      <button class="btn ghost" onclick="resetForm()">清空</button>
+    </div>
+    <div id="status"></div>
+  </div>
+
+  <!-- 价格监控清单 -->
+  <div class="card">
+    <h2><span class="bar"></span>价格监控清单 <span style="font-size:11px;color:var(--muted);font-weight:400">（每小时自动检查 · 触发止盈/止损警戒线时页面强提醒）</span></h2>
+    <table>
+      <thead><tr><th>个股</th><th class="num">成本价</th><th class="num">最新价</th><th class="num">距止损</th><th class="num">距止盈①</th><th>状态</th><th>最近检查</th><th>操作</th></tr></thead>
+      <tbody id="watchBody"><tr><td colspan="8" style="color:var(--muted)">暂无监控标的。生成诊断报告后点「加入价格监控」即可。</td></tr></tbody>
+    </table>
+    <div class="row" style="margin-top:12px">
+      <button class="btn ghost" onclick="watchCheckAll(true)">立即检查全部</button>
+      <div id="watchStatus" style="flex:1;font-size:12px;color:var(--muted);align-self:center"></div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    本工具基于「成本价 + 当前价 + 风险偏好」做规则化测算，属于仓位与风控参考，<b>不构成任何投资建议</b>。
+    自动行情经公开接口获取，可能因网络/接口限制失败，失败时请手动填入当前价。
+    监控数据缓存在本浏览器（localStorage），仅页面开启期间执行每小时检查。
+  </div>
+</div>
+
+<!-- 警戒线强提醒浮层 -->
+<div id="alertMask" class="alert-mask">
+  <div class="alert-box">
+    <h3>⚠️ 价格警戒线触发提醒</h3>
+    <div id="alertList"></div>
+    <button class="alert-btn" onclick="alertDismiss()">我已知晓（今日该级别不再重复提醒）</button>
+  </div>
+</div>
+
+<!-- ========== 第 2 页：诊断报告 ========== -->
+<div id="page-report" class="page">
+  <div class="header">
+    <div>
+      <h1>持仓诊断报告</h1>
+      <div class="sub" id="rMeta">—</div>
+    </div>
+    <span class="badge">持仓诊断</span>
+  </div>
+
+  <div class="backbar">
+    <button class="btn ghost" onclick="goInput()">← 返回修改参数</button>
+    <button class="btn ghost" id="btnWatch" onclick="watchAddCurrent()" style="border-color:var(--gold);color:var(--gold)">＋ 加入价格监控（每小时检查）</button>
+  </div>
+
+  <!-- 核心结论 -->
+  <div class="card">
+    <h2><span class="bar"></span>核心结论</h2>
+    <div class="kpis">
+      <div class="kpi"><div class="v" style="color:var(--gold)" id="kCost">—</div><div class="k">持仓成本价</div></div>
+      <div class="kpi"><div class="v" id="kPrice">—</div><div class="k">当前价</div></div>
+      <div class="kpi"><div class="v" id="kPnl">—</div><div class="k">浮动盈亏（元）</div></div>
+      <div class="kpi"><div class="v" id="kRatio">—</div><div class="k">盈亏比例</div></div>
+      <div class="kpi"><div class="v" id="kValue">—</div><div class="k">持仓市值（元）</div></div>
+      <div class="kpi"><div class="v" id="kSignal">—</div><div class="k">综合评级</div></div>
+    </div>
+  </div>
+
+  <!-- 持仓与成本结构 -->
+  <div class="card">
+    <h2><span class="bar"></span>持仓与成本结构</h2>
+    <table>
+      <thead><tr><th>项目</th><th class="num">数值</th><th>说明</th></tr></thead>
+      <tbody id="structBody"></tbody>
+    </table>
+  </div>
+
+  <!-- 价位轴 -->
+  <div class="card">
+    <h2><span class="bar"></span>价位轴（止损 → 成本 → 当前 → 止盈）</h2>
+    <div class="ladder">
+      <div class="axis"></div>
+      <div id="ladderPts"></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;">止损线(红) · 成本线(灰) · 当前价(金色高亮) · 止盈线(绿)</div>
+  </div>
+
+  <!-- 操作建议 -->
+  <div class="card">
+    <h2><span class="bar"></span>操作建议（分级价位 + 触发条件）</h2>
+    <table>
+      <thead><tr><th>动作</th><th>触发条件</th><th class="num">参考价位</th><th>仓位处理</th></tr></thead>
+      <tbody id="opBody"></tbody>
+    </table>
+    <div class="advice" id="rAdvice"></div>
+  </div>
+
+  <div class="disclaimer">
+    本报告基于「成本价 + 当前价 + 风险偏好」规则化测算生成，所有价位均为技术参考，<b>不构成任何投资建议</b>。
+    如需含 支撑阻力 / 均线 / 资金面 的深度诊断，请在对话中发送「诊断 代码 + 持股金额 + 股数」由 AI 拉取真实数据生成。
+    投资有风险，决策需独立判断。
+  </div>
+</div>
+
+<script>
+// ---------- 页面切换（hash 路由，支持浏览器返回键） ----------
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo({top:0});
+}
+function goInput(){ if(location.hash==="#report"){ history.back(); } else { showPage("page-input"); } }
+window.addEventListener("hashchange", function(){
+  if(location.hash==="#report" && window.__hasReport){ showPage("page-report"); }
+  else { showPage("page-input"); }
+});
+
+// ---------- 代码解析与行情获取 ----------
+function parseCode(raw){
+  if(!raw) return null;
+  let s = raw.trim().toUpperCase();
+  let m = s.match(/^(SH|SZ|BJ)(\d{4,6})$/);
+  if(m) return {prefix:m[1].toLowerCase(), code:m[2]};
+  m = s.match(/^(\d{4,6})\.(SH|SZ|BJ)$/);
+  if(m) return {prefix:m[2].toLowerCase(), code:m[1]};
+  m = s.match(/^(\d{4,6})$/);
+  if(m){
+    const c = m[1];
+    if(/^(60|68|9)/.test(c)) return {prefix:"sh", code:c};
+    else if(/^(00|30|3)/.test(c)) return {prefix:"sz", code:c};
+    else if(/^(8|4|920)/.test(c)) return {prefix:"bj", code:c};
+  }
+  return null; // 视为名称
+}
+function setStatus(msg, cls){ document.getElementById("status").innerHTML = msg? `<span class="${cls}">${msg}</span>`:""; }
+
+function fetchTencentPrice(tCode){
+  return new Promise((resolve,reject)=>{
+    const s = document.createElement("script");
+    s.src = "https://qt.gtimg.cn/q=" + tCode;
+    s.onload = function(){
+      const key = "v_" + tCode;
+      const data = window[key];
+      if(data && typeof data==="string"){
+        const p = data.split("~");
+        resolve({name:p[1]||"", code:p[2]||"", price:parseFloat(p[3])||0});
+      } else { reject(new Error("no data")); }
+      if(s.parentNode) s.parentNode.removeChild(s);
+    };
+    s.onerror = function(){ reject(new Error("load error")); if(s.parentNode) s.parentNode.removeChild(s); };
+    document.head.appendChild(s);
+  });
+}
+// 本地行情代理：绕过浏览器 CSP/CORS 限制
+async function fetchLocalProxy(tCode){
+  try{
+    const r = await fetch("http://127.0.0.1:8765/quote/" + tCode, {method:"GET", mode:"cors"});
+    if(!r.ok) throw new Error("proxy " + r.status);
+    const j = await r.json();
+    if(j.ok && j.price>0) return {name:j.name||"", code:j.code||"", price:j.price};
+    throw new Error("proxy no data");
+  }catch(e){ throw e; }
+}
+let quoteName = ""; // 拉到的股票名称
+async function autoPrice(){
+  const raw = document.getElementById("code").value;
+  if(!raw){ setStatus("请先填写个股代码或名称","err"); return; }
+  setStatus("正在获取行情…","load");
+  const pc = parseCode(raw);
+  if(!pc){ setStatus("请输入股票代码（如 688825 / sh688825），名称请手动填写当前价","err"); return; }
+  const tCode = pc.prefix + pc.code;
+
+  // 第1优先：本地代理（需先在本地运行 tools/quote_proxy.py）
+  try{
+    const res = await fetchLocalProxy(tCode);
+    if(res.price>0){
+      document.getElementById("price").value = res.price.toFixed(2);
+      quoteName = res.name || "";
+      setStatus("本地代理行情成功：" + res.name + " (" + res.code + ") " + res.price.toFixed(2) + " 元","ok");
+      return;
+    }
+  }catch(e){}
+
+  // 第2兜底：script JSONP（本地浏览器可能可用，沙箱预览通常失败）
+  try{
+    const res = await fetchTencentPrice(tCode);
+    if(res.price>0){
+      document.getElementById("price").value = res.price.toFixed(2);
+      quoteName = res.name || "";
+      setStatus("行情获取成功：" + res.name + " (" + res.code + ") " + res.price.toFixed(2) + " 元","ok");
+      return;
+    }
+  }catch(e){}
+
+  setStatus("行情接口未返回。本地使用请先启动代理：python tools/quote_proxy.py；沙箱环境请手动填入当前价","err");
+}
+
+// ---------- 诊断与报告渲染 ----------
+const RISK = {
+  conservative:{ stop:-0.05, hard:-0.08, tp1:0.08, tp2:0.15, label:"保守" },
+  balance:     { stop:-0.07, hard:-0.10, tp1:0.12, tp2:0.25, label:"平衡" },
+  aggressive:  { stop:-0.10, hard:-0.15, tp1:0.20, tp2:0.40, label:"激进" }
+};
+function fmt(n,d=2){ return Number(n).toLocaleString("zh-CN",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function cls(v){ return v>=0 ? "var(--red)" : "var(--green)"; } // A股红涨绿跌
+
+// 持股金额 = 股数 × 成本价（只读自动）；账户总资金 = 持股金额 ÷ 仓位占比（只读自动）
+function syncAmount(){
+  const s = parseFloat(document.getElementById("shares").value),
+        c = parseFloat(document.getElementById("cost").value);
+  document.getElementById("amount").value = (s>0 && c>0) ? (s*c).toFixed(2) : "";
+  syncTotal();
+}
+function syncTotal(){
+  const a = parseFloat(document.getElementById("amount").value),
+        p = parseFloat(document.getElementById("pos").value);
+  document.getElementById("total").value = (a>0 && p>0 && p<=100) ? (a/(p/100)).toFixed(0) : "";
+}
+document.getElementById("shares").addEventListener("input",syncAmount);
+document.getElementById("cost").addEventListener("input",syncAmount);
+document.getElementById("pos").addEventListener("input",syncTotal);
+
+function diagnose(){
+  const price  = parseFloat(document.getElementById("price").value);
+  const shares = parseFloat(document.getElementById("shares").value);
+  const costIn = parseFloat(document.getElementById("cost").value);
+  const pos    = parseFloat(document.getElementById("pos").value);
+  const riskKey= document.getElementById("risk").value;
+  const risk   = RISK[riskKey];
+  if(!(price>0)){ setStatus("请填写当前价（或点自动获取）","err"); return; }
+  if(!(shares>0) || !(costIn>0)){ setStatus("请填写 持股股数 与 成本价","err"); return; }
+  if(document.getElementById("pos").value && !(pos>0 && pos<=100)){ setStatus("仓位占比需在 0 ~ 100 之间","err"); return; }
+
+  const amount = shares * costIn;                      // 持股金额自动计算
+  const total  = (pos>0 && pos<=100) ? amount/(pos/100) : NaN; // 总资金由仓位占比推算
+  const cost  = costIn;
+  const value = price * shares;
+  const pnl   = (price - cost) * shares;
+  const ratio = (price - cost) / cost;
+  const codeRaw = document.getElementById("code").value.trim() || "—";
+  const dispName = quoteName ? (quoteName + "（" + codeRaw + "）") : codeRaw;
+  const today = new Date();
+  const dstr = today.getFullYear() + "-" + String(today.getMonth()+1).padStart(2,"0") + "-" + String(today.getDate()).padStart(2,"0");
+
+  // Header meta
+  document.getElementById("rMeta").textContent =
+    "个股：" + dispName + " · 诊断日期：" + dstr + " · 风险档：" + risk.label;
+
+  // 信号判定
+  let signal, scolor;
+  if(price <= cost*(1+risk.hard)){ signal="止损离场"; scolor="var(--red)"; }
+  else if(price <= cost*(1+risk.stop)){ signal="减仓警戒"; scolor="var(--orange)"; }
+  else if(price < cost*(1+risk.tp1)){ signal="持有观察"; scolor="var(--blue)"; }
+  else if(price < cost*(1+risk.tp2)){ signal="分批止盈"; scolor="var(--green)"; }
+  else { signal="获利了结"; scolor="var(--green)"; }
+
+  // KPI
+  document.getElementById("kCost").textContent  = fmt(cost);
+  const kP = document.getElementById("kPrice"); kP.textContent = fmt(price); kP.style.color = cls(price-cost);
+  const kL = document.getElementById("kPnl");   kL.textContent = (pnl>=0?"+":"") + fmt(pnl,0); kL.style.color = cls(pnl);
+  const kR = document.getElementById("kRatio"); kR.textContent = (ratio>=0?"+":"") + (ratio*100).toFixed(2) + "%"; kR.style.color = cls(pnl);
+  document.getElementById("kValue").textContent = fmt(value,0);
+  const kS = document.getElementById("kSignal"); kS.textContent = signal; kS.style.color = scolor;
+
+  // 持仓与成本结构
+  let struct = [
+    ["持股金额", fmt(amount,0)+" 元", "股数 × 成本价（自动计算）"],
+    ["持股股数", fmt(shares,0)+" 股", "（用户填写）"],
+    ["持仓成本价", fmt(cost)+" 元", "（用户填写）"],
+    ["当前市值", fmt(value,0)+" 元", "当前价 × 股数"],
+    ["浮动盈亏", (pnl>=0?"+":"")+fmt(pnl,0)+" 元", "相对成本 "+(ratio>=0?"+":"")+(ratio*100).toFixed(2)+"%", cls(pnl)]
+  ];
+  if(total>0){
+    struct.push(["仓位占比", pos.toFixed(1)+"%", posComment(pos/100)]);
+    struct.push(["账户总资金", fmt(total,0)+" 元", "持股金额 ÷ 仓位占比（自动推算）"]);
+  }
+  document.getElementById("structBody").innerHTML = struct.map(r=>
+    `<tr><td>${r[0]}</td><td class="num"${r[3]?` style="color:${r[3]}"`:""}>${r[1]}</td><td style="color:var(--muted)">${r[2]}</td></tr>`
+  ).join("");
+
+  // 价位轴
+  const levels = [
+    {key:"hard", name:"强止损", r:risk.hard},
+    {key:"stop", name:"止损",   r:risk.stop},
+    {key:"cost", name:"成本价", r:0},
+    {key:"now",  name:"当前价", r:ratio},
+    {key:"tp1",  name:"止盈①",  r:risk.tp1},
+    {key:"tp2",  name:"止盈②",  r:risk.tp2}
+  ];
+  const prices = levels.map(l=> cost*(1+l.r));
+  const lo = Math.min(...prices), hi = Math.max(...prices);
+  const span = hi-lo || 1;
+  document.getElementById("ladderPts").innerHTML = levels.map(l=>{
+    const p = cost*(1+l.r);
+    const x = ((p-lo)/span)*100;
+    let color = "var(--muted)";
+    if(l.key==="now") color = "var(--gold)";
+    else if(l.r<0) color = "var(--red)";
+    else if(l.r>0) color = "var(--green)";
+    return `<div class="pt ${l.key==='now'?'now':''}" style="left:${x}%;background:${color};">
+      <div class="lbl" style="color:${color}">${l.name}</div>
+      <div class="val">${fmt(p)}</div></div>`;
+  }).join("");
+
+  // 操作建议表
+  const pHard=cost*(1+risk.hard), pStop=cost*(1+risk.stop), pTp1=cost*(1+risk.tp1), pTp2=cost*(1+risk.tp2);
+  const ops = [
+    {tag:"add",  n:"加仓", c:`回踩成本价 ${fmt(cost)} 附近缩量企稳（仓位未满时）`, p:fmt(cost), h:"分批低吸，控制节奏"},
+    {tag:"hold", n:"持有", c:`在 ${fmt(pStop)} – ${fmt(pTp1)} 区间内运行`, p:`${fmt(pStop)}–${fmt(pTp1)}`, h:"不动，跟踪量能"},
+    {tag:"cut",  n:"减仓", c:`触及止盈① ${fmt(pTp1)}（+${(risk.tp1*100).toFixed(0)}%）放量滞涨`, p:fmt(pTp1), h:"减 1/2 仓，锁利润"},
+    {tag:"cut",  n:"止盈", c:`到达止盈② ${fmt(pTp2)}（+${(risk.tp2*100).toFixed(0)}%）`, p:fmt(pTp2), h:"了结大部分仓位"},
+    {tag:"out",  n:"止损", c:`跌破止损线 ${fmt(pStop)}（${(risk.stop*100).toFixed(0)}%）警戒；跌破强止损 ${fmt(pHard)} 必须执行`, p:fmt(pHard), h:"清仓离场，纪律底线"}
+  ];
+  document.getElementById("opBody").innerHTML = ops.map(o=>
+    `<tr><td><span class="tag ${o.tag}">${o.n}</span></td><td>${o.c}</td><td class="num">${o.p}</td><td style="color:var(--muted)">${o.h}</td></tr>`
+  ).join("");
+
+  // 综合建议
+  const dev = (ratio*100).toFixed(2);
+  let extra = "";
+  if(price < cost && ratio>=-0.07 && ratio<=-0.03 && riskKey!=="conservative"){
+    extra = ` 当前价低于成本 ${Math.abs(ratio*100).toFixed(2)}%，处于可分批低吸降本区间，需预留现金并控制加仓节奏。`;
+  }
+  if(total>0){
+    const pct = amount/total;
+    if(pct>0.3) extra += ` 单票仓位 ${(pct*100).toFixed(1)}% 偏重，注意集中度风险。`;
+  }
+  document.getElementById("rAdvice").innerHTML =
+    `<b>综合诊断：</b>当前价相对成本 ${dev>=0?"浮盈":"浮亏"} ${Math.abs(dev)}%，主信号为「<b>${signal}</b>」（${risk.label}档）。` +
+    `强止损位 ${fmt(pHard)} 为纪律底线，跌破必须执行；止盈① ${fmt(pTp1)} 起可分批兑现利润。${extra}`;
+
+  // 记录本次诊断（供“加入价格监控”与缓存恢复使用）
+  const pc0 = parseCode(codeRaw);
+  window.__lastDiag = {
+    codeRaw, tCode: pc0 ? (pc0.prefix + pc0.code) : "",
+    name: quoteName || codeRaw,
+    cost, shares, riskKey, pos: (pos>0?pos:null), lastPrice: price,
+    levels: { hard: cost*(1+risk.hard), stop: cost*(1+risk.stop), tp1: cost*(1+risk.tp1), tp2: cost*(1+risk.tp2) }
+  };
+  saveFormCache();
+
+  // 跳转报告页
+  window.__hasReport = true;
+  setStatus("");
+  if(location.hash!=="#report"){ location.hash = "#report"; } // 触发 hashchange → showPage
+  showPage("page-report");
+}
+
+function posComment(pct){
+  if(pct>0.5) return "单票仓位过重，集中度风险高";
+  if(pct>0.3) return "单票仓位偏重";
+  if(pct>0.15) return "单票仓位适中";
+  return "单票仓位较轻";
+}
+function resetForm(){
+  ["code","price","amount","shares","cost","pos","total"].forEach(id=>document.getElementById(id).value="");
+  quoteName = "";
+  setStatus("");
+  try{ localStorage.removeItem(FORM_KEY); }catch(e){}
+}
+
+// ================== 页面缓存（localStorage） ==================
+const FORM_KEY  = "wb_diag_form_v1";   // 表单参数缓存（与日报模块4共享）
+const WATCH_KEY = "wb_diag_watch_v1";  // 价格监控清单缓存（与日报模块4共享）
+function saveFormCache(){
+  try{
+    const o = {};
+    ["code","price","shares","cost","pos"].forEach(id=> o[id]=document.getElementById(id).value);
+    o.risk = document.getElementById("risk").value;
+    o.quoteName = quoteName;
+    localStorage.setItem(FORM_KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function loadFormCache(){
+  try{
+    const o = JSON.parse(localStorage.getItem(FORM_KEY)||"null");
+    if(!o) return;
+    ["code","price","shares","cost","pos"].forEach(id=>{ if(o[id]) document.getElementById(id).value=o[id]; });
+    if(o.risk) document.getElementById("risk").value=o.risk;
+    quoteName = o.quoteName||"";
+    syncAmount();
+    if(o.code) setStatus("已恢复上次缓存的持仓参数","ok");
+  }catch(e){}
+}
+
+// ================== 价格监控（每小时） + 警戒线强提醒 ==================
+const CHECK_MS = 60*60*1000; // 1 小时
+function watchLoad(){ try{ return JSON.parse(localStorage.getItem(WATCH_KEY)||"[]"); }catch(e){ return []; } }
+function watchSave(list){ try{ localStorage.setItem(WATCH_KEY, JSON.stringify(list)); }catch(e){} }
+function todayStr(){ const t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
+
+function watchAddCurrent(){
+  const d = window.__lastDiag;
+  if(!d){ alert("请先生成诊断报告"); return; }
+  if(!d.tCode){ alert("该标的未识别出股票代码，无法自动监控（请用代码重新诊断）"); return; }
+  const list = watchLoad();
+  const i = list.findIndex(x=>x.tCode===d.tCode);
+  const entry = { ...d, addedAt: Date.now(), lastCheck: null, lastStatus: "待检查", alerted: {} };
+  if(i>=0) list[i]=entry; else list.push(entry);
+  watchSave(list);
+  renderWatch();
+  const b=document.getElementById("btnWatch");
+  b.textContent="✓ 已加入监控（每小时检查）"; setTimeout(()=>b.textContent="＋ 加入价格监控（每小时检查）",2500);
+  askNotifyPermission();
+  watchCheckAll(false);
+}
+function watchRemove(tCode){
+  watchSave(watchLoad().filter(x=>x.tCode!==tCode));
+  renderWatch();
+}
+function judgeLevel(e, price){
+  const L=e.levels;
+  if(price<=L.hard) return {key:"hard", cls:"down", label:"⛔ 触发强止损 "+fmt(L.hard), strong:true};
+  if(price<=L.stop) return {key:"stop", cls:"down", label:"⚠ 触发止损警戒 "+fmt(L.stop), strong:true};
+  if(price>=L.tp2)  return {key:"tp2",  cls:"up",   label:"🎯 到达止盈② "+fmt(L.tp2), strong:true};
+  if(price>=L.tp1)  return {key:"tp1",  cls:"up",   label:"🎯 到达止盈① "+fmt(L.tp1), strong:true};
+  if(price<=L.stop*1.02) return {key:"nearStop", cls:"warn", label:"接近止损线", strong:false};
+  if(price>=L.tp1*0.98)  return {key:"nearTp",   cls:"warn", label:"接近止盈①", strong:false};
+  return {key:"ok", cls:"ok", label:"区间内正常", strong:false};
+}
+async function watchCheckAll(manual){
+  const list = watchLoad();
+  if(!list.length){ if(manual) document.getElementById("watchStatus").textContent="监控清单为空"; return; }
+  document.getElementById("watchStatus").textContent="正在检查行情…";
+  const triggers = [];
+  for(const e of list){
+    try{
+      const res = await fetchTencentPrice(e.tCode);
+      if(res.price>0){
+        e.lastPrice = res.price;
+        if(res.name) e.name = res.name;
+        const j = judgeLevel(e, res.price);
+        e.lastStatus = j.label; e.lastCls = j.cls; e.lastCheck = Date.now();
+        const dkey = j.key+"@"+todayStr();
+        if(j.strong && !e.alerted[dkey]){          // 同级别每日只强提醒一次
+          e.alerted[dkey] = 1;
+          triggers.push({e, j, price: res.price});
+        }
+      } else { e.lastStatus="行情未返回"; e.lastCls="err"; e.lastCheck=Date.now(); }
+    }catch(err){ e.lastStatus="行情未返回（网络受限）"; e.lastCls="err"; e.lastCheck=Date.now(); }
+  }
+  watchSave(list);
+  renderWatch();
+  document.getElementById("watchStatus").textContent="最近检查："+new Date().toLocaleTimeString("zh-CN")+"（每小时自动检查一次）";
+  if(triggers.length) fireAlert(triggers);
+}
+function renderWatch(){
+  const list = watchLoad();
+  const tb = document.getElementById("watchBody");
+  if(!list.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--muted)">暂无监控标的。生成诊断报告后点「加入价格监控」即可。</td></tr>'; return; }
+  tb.innerHTML = list.map(e=>{
+    const px = e.lastPrice||0, L=e.levels;
+    const dStop = px>0 ? ((px-L.stop)/px*100).toFixed(1)+"%" : "—";
+    const dTp1  = px>0 ? ((L.tp1-px)/px*100).toFixed(1)+"%" : "—";
+    const t = e.lastCheck ? new Date(e.lastCheck).toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}) : "—";
+    return `<tr>
+      <td><b>${e.name}</b><br><span style="color:var(--muted);font-size:11px">${e.tCode}</span></td>
+      <td class="num">${fmt(e.cost)}</td>
+      <td class="num" style="color:${px>=e.cost?'var(--red)':'var(--green)'}">${px>0?fmt(px):"—"}</td>
+      <td class="num">${dStop}</td><td class="num">${dTp1}</td>
+      <td><span class="chip ${e.lastCls||'err'}">${e.lastStatus||"待检查"}</span></td>
+      <td style="color:var(--muted);font-size:12px">${t}</td>
+      <td><button class="wbtn" onclick="watchRemove('${e.tCode}')">移除</button></td>
+    </tr>`;
+  }).join("");
+}
+// ---- 强提醒：全屏浮层 + 蜂鸣 + 标题闪烁 + 系统通知 ----
+let titleTimer=null;
+function fireAlert(triggers){
+  document.getElementById("alertList").innerHTML = triggers.map(t=>{
+    const dir = t.j.cls==="up" ? "止盈" : "止损";
+    return `<div class="alert-item ${t.j.cls}"><b>${t.e.name}（${t.e.tCode}）</b>　最新价 <b>${fmt(t.price)}</b><br>
+      ${t.j.label} —— 请按纪律执行${dir}计划（成本 ${fmt(t.e.cost)}，${t.j.cls==="up"?"建议分批兑现利润":"跌破强止损必须离场"}）</div>`;
+  }).join("");
+  document.getElementById("alertMask").classList.add("show");
+  beep();
+  if(!titleTimer){
+    const orig=document.title; let on=false;
+    titleTimer=setInterval(()=>{ document.title = (on=!on) ? "🔴 警戒线触发！" : orig; },900);
+  }
+  try{
+    if(Notification && Notification.permission==="granted"){
+      triggers.forEach(t=> new Notification("持仓警戒提醒："+t.e.name, {body:t.j.label+" · 最新价 "+fmt(t.price)}));
+    }
+  }catch(e){}
+}
+function alertDismiss(){
+  document.getElementById("alertMask").classList.remove("show");
+  if(titleTimer){ clearInterval(titleTimer); titleTimer=null; document.title="持仓诊断 · A股"; }
+}
+function beep(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [0,.35,.7].forEach(t0=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value=880; g.gain.setValueAtTime(.25,ctx.currentTime+t0);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t0+.3);
+      o.start(ctx.currentTime+t0); o.stop(ctx.currentTime+t0+.3);
+    });
+  }catch(e){}
+}
+function askNotifyPermission(){ try{ if(Notification && Notification.permission==="default") Notification.requestPermission(); }catch(e){} }
+
+// ================== 初始化 ==================
+if(location.hash==="#report"){ history.replaceState(null,"",location.pathname); }
+loadFormCache();
+renderWatch();
+watchCheckAll(false);                 // 打开页面先检查一次
+setInterval(()=>watchCheckAll(false), CHECK_MS); // 每小时自动检查
+</script>
+
+<!-- ===== WB 私密访问门禁 ===== -->
+<div id="wbGate" style="position:fixed;inset:0;z-index:2147483647;background:#0b0e14;display:flex;align-items:center;justify-content:center;font-family:'Microsoft YaHei','PingFang SC',sans-serif;">
+  <div style="width:320px;max-width:88vw;background:#131722;border:1px solid #232a3b;border-radius:16px;padding:34px 28px;text-align:center;">
+    <div style="font-size:34px;">🔒</div>
+    <div style="color:#e8ecf4;font-size:17px;font-weight:700;margin:12px 0 4px;">私密访问</div>
+    <div style="color:#9aa4b8;font-size:12px;margin-bottom:18px;">请输入访问口令</div>
+    <input id="wbGateInput" type="password" placeholder="访问口令" autocomplete="off"
+      style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid #232a3b;background:#0b0e14;color:#e8ecf4;font-size:14px;outline:none;">
+    <button id="wbGateBtn"
+      style="width:100%;margin-top:12px;padding:11px 0;border:none;border-radius:10px;background:#f0b90b;color:#111;font-size:14px;font-weight:700;cursor:pointer;">进 入</button>
+    <div id="wbGateMsg" style="color:#f6465d;font-size:12px;margin-top:10px;min-height:16px;"></div>
+    <div style="color:#5c6478;font-size:10.5px;margin-top:14px;line-height:1.7;">仅限授权使用 · 内容不构成投资建议</div>
+  </div>
+</div>
+<script>
+(function(){
+  var HASH="15f615593dbecae0dc6730ea27fb9365658ab3cb05a3e499e8fff35b2deea1c8";
+  var gate=document.getElementById("wbGate");
+  if(sessionStorage.getItem("wb_gate_ok")==="1"){gate.style.display="none";return;}
+  document.documentElement.style.overflow="hidden";
+  function pass(){sessionStorage.setItem("wb_gate_ok","1");gate.style.display="none";document.documentElement.style.overflow="";}
+  function fail(m){document.getElementById("wbGateMsg").textContent=m||"口令错误，请重试";}
+  async function check(){
+    var v=document.getElementById("wbGateInput").value||"";
+    if(!v){fail("请输入口令");return;}
+    if(window.crypto&&crypto.subtle){
+      try{
+        var buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));
+        var hex=Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0");}).join("");
+        if(hex===HASH){pass();}else{fail();}
+        return;
+      }catch(e){}
+    }
+    fail("当前环境不支持校验，请使用 HTTPS 打开");
+  }
+  document.getElementById("wbGateBtn").addEventListener("click",check);
+  document.getElementById("wbGateInput").addEventListener("keydown",function(e){if(e.key==="Enter")check();});
+})();
+</script>
+<!-- ===== /WB 门禁 ===== -->
+
+</body>
+</html>

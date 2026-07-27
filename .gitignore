@@ -1,0 +1,4 @@
+# 防止任何凭证/临时文件被推送到 GitHub Pages
+.env*
+.sftp_batch
+*.local

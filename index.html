@@ -25,6 +25,15 @@
   .foot{text-align:center;color:#5c6478;font-size:11px;margin-top:32px;line-height:1.8;}
   @media(max-width:560px){.cards{grid-template-columns:1fr;}}
 </style>
+<!-- ===== WB 私密门禁样式（未通过前隐藏正文，防闪烁） ===== -->
+<style id="wbGateCss">
+  html.wb-lock{overflow:hidden!important;}
+  html.wb-lock body>*:not(#wbGate){visibility:hidden!important;}
+</style>
+<script id="wbGateInit">
+  (function(){try{document.documentElement.classList.add('wb-lock');}catch(e){}})();
+</script>
+<!-- ===== /WB 私密门禁样式 ===== -->
 </head>
 <body>
 <div class="wrap">
@@ -73,10 +82,10 @@
 (function(){
   var HASH="15f615593dbecae0dc6730ea27fb9365658ab3cb05a3e499e8fff35b2deea1c8";
   var gate=document.getElementById("wbGate");
-  if(sessionStorage.getItem("wb_gate_ok")==="1"){gate.style.display="none";return;}
-  document.documentElement.style.overflow="hidden";
-  function pass(){sessionStorage.setItem("wb_gate_ok","1");gate.style.display="none";document.documentElement.style.overflow="";}
-  function fail(m){document.getElementById("wbGateMsg").textContent=m||"口令错误，请重试";}
+  function open(){try{document.documentElement.classList.remove("wb-lock");}catch(e){}if(gate)gate.style.display="none";}
+  if(sessionStorage.getItem("wb_gate_ok")==="1"){open();return;}
+  function pass(){try{sessionStorage.setItem("wb_gate_ok","1");}catch(e){}open();}
+  function fail(m){var el=document.getElementById("wbGateMsg");if(el)el.textContent=m||"口令错误，请重试";}
   async function check(){
     var v=document.getElementById("wbGateInput").value||"";
     if(!v){fail("请输入口令");return;}
@@ -90,8 +99,8 @@
     }
     fail("当前环境不支持校验，请使用 HTTPS 打开");
   }
-  document.getElementById("wbGateBtn").addEventListener("click",check);
-  document.getElementById("wbGateInput").addEventListener("keydown",function(e){if(e.key==="Enter")check();});
+  var b=document.getElementById("wbGateBtn");if(b)b.addEventListener("click",check);
+  var i=document.getElementById("wbGateInput");if(i)i.addEventListener("keydown",function(e){if(e.key==="Enter")check();});
 })();
 </script>
 <!-- ===== /WB 门禁 ===== -->

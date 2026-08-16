@@ -612,6 +612,12 @@
             </div>
           </div>
 
+          <!-- 动态逐股风控分析（读取监控清单实时生成） -->
+          <div class="dec-box" style="grid-column:1/-1;background:linear-gradient(180deg,rgba(240,185,11,.06),rgba(20,24,33,.35));border-color:var(--gold);margin-top:4px">
+            <h4>📡 已监测个股 · 逐股风控分析（实时）</h4>
+            <div id="d_decWatchList" style="font-size:12.5px;color:var(--tx2)">正在读取监控清单…</div>
+          </div>
+
           <div class="diag-sub">统一决策矩阵 · 市场信息 × 技术指标</div>
           <table class="dec-matrix">
             <thead><tr><th>维度</th><th>止盈未减仓</th><th>止损未减仓</th></tr></thead>
@@ -1006,6 +1012,71 @@ function d_renderWatch(){
       <td style="color:var(--tx3);font-size:12px">${t}</td>
       <td><button class="d-wbtn" onclick="d_watchRemove('${e.tCode}')">移除</button></td>
     </tr>`;
+  }).join("");
+  d_renderDecWatch();
+}
+function d_renderDecWatch(){
+  const box=document.getElementById("d_decWatchList");
+  if(!box) return;
+  const list=d_watchLoad();
+  if(!list.length){
+    box.innerHTML='<div style="color:var(--tx2)">暂未加入监控标的。在「持仓诊断」生成报告后点「＋ 加入价格监控」，本栏将自动逐只生成下一步风控分析与建议（实时跟随每小时自动检查刷新）。</div>';
+    return;
+  }
+  box.innerHTML=list.map(e=>{
+    const L=e.levels||{hard:0,stop:0,tp1:0,tp2:0};
+    const px=(e.lastPrice>0)?e.lastPrice:0;
+    const j=px>0?d_judgeLevel(e,px):null;
+    const cost=e.cost||0;
+    const pnl=(px>0&&cost>0)?((px-cost)/cost*100):null;
+    const dStop=(px>0&&L.stop>0)?((px-L.stop)/px*100):null;
+    const dTp1=(px>0&&L.tp1>0)?((L.tp1-px)/px*100):null;
+    let tag, advice;
+    if(!j){
+      tag='<span class="d-chip err">待检查（无行情）</span>';
+      advice='尚未取到行情（等待自动检查或网络受限）。请手动核对现价与警戒线，避免错过触发。';
+    } else switch(j.key){
+      case "hard":
+        tag='<span class="d-chip down">'+j.label+'</span>';
+        advice='<b style="color:var(--up)">最高优先级 · 立即离场：</b>已跌破强止损线，纪律上不再给任何反弹确认，下一交易时段开盘或任何反弹即减仓至清。严禁在下行中补仓摊薄。';
+        break;
+      case "stop":
+        tag='<span class="d-chip down">'+j.label+'</span>';
+        advice='<b style="color:var(--up)">止损警戒触发：</b>已逼近强止损，默认离场信号。先判真伪——真破（放量破前低/20·60日线、MACD死叉、板块净流出居前、出新利空）→ 清；假破（缩量回踩支撑不破、长下影、板块仍强）→ 设更紧二次止损，给 1~2 日观察，反弹不过前高即离场。';
+        break;
+      case "tp2":
+        tag='<span class="d-chip up">'+j.label+'</span>';
+        advice='<b style="color:var(--up)">已达第二止盈目标：</b>分批兑现利润，至少减仓 50%。剩余仓切换<b>移动止盈</b>（自最高点回撤 8%~12% 离场），严禁“回到原止盈价再卖”的锚定心理。';
+        break;
+      case "tp1":
+        tag='<span class="d-chip up">'+j.label+'</span>';
+        advice='<b style="color:var(--up)">已达第一止盈目标：</b>按计划首批减仓（建议 1/3~1/2）锁定利润。若量价齐升、无顶背离、板块仍热，剩余仓改<b>移动止盈</b>续持。';
+        break;
+      case "nearStop":
+        tag='<span class="d-chip warn">'+j.label+'</span>';
+        advice='已接近止损线（距强止损约 <b style="color:var(--tx)">'+(dStop!=null?dStop.toFixed(1):'—')+'%</b>），提高警惕。预设更紧的二次止损单，避免破位后犹豫；若所属板块当日净流出居前，可提前减仓。';
+        break;
+      case "nearTp":
+        tag='<span class="d-chip warn">'+j.label+'</span>';
+        advice='已接近第一止盈（距止盈①约 <b style="color:var(--tx)">'+(dTp1!=null?dTp1.toFixed(1):'—')+'%</b>），准备止盈动作。可先上移止损至成本线，保住本金安全垫，再用移动止盈吃鱼身。';
+        break;
+      default:
+        tag='<span class="d-chip ok">'+j.label+'</span>';
+        advice='区间内正常运行，持有观察。按原纪律设好移动止盈/止损即可，无须额外动作。关注所属板块资金动向与个股量价是否异动。';
+    }
+    const pxTxt=px>0?d_fmt(px):"—";
+    const pnlTxt=(pnl!==null)?'<span style="color:'+(pnl>=0?'var(--up)':'var(--down)')+'">'+(pnl>=0?'+':'')+pnl.toFixed(1)+'%</span>':'—';
+    return '<div style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--card2)">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'+
+        '<div><b style="color:var(--tx);font-size:13px">'+e.name+'</b> <span style="color:var(--tx3);font-size:11px">'+e.tCode+'</span></div>'+tag+
+      '</div>'+
+      '<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--tx2);margin-bottom:8px">'+
+        '<span>成本 <b style="color:var(--tx)">'+d_fmt(cost)+'</b></span>'+
+        '<span>现价 <b style="color:var(--tx)">'+pxTxt+'</b></span>'+
+        '<span>浮盈亏 '+pnlTxt+'</span>'+
+      '</div>'+
+      '<div style="color:var(--tx2);line-height:1.8">'+advice+'</div>'+
+    '</div>';
   }).join("");
 }
 let d_titleTimer=null;

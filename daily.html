@@ -197,6 +197,16 @@
   .d-chip.err{background:rgba(154,163,181,.15);color:var(--tx3)}
   .d-wbtn{background:var(--card2);border:1px solid var(--line);color:var(--tx);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer}
   .d-wbtn:hover{border-color:var(--gold)}
+  .d-wbtn.act{border-color:var(--gold);color:var(--gold);margin-bottom:4px}
+  .d-acct-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}
+  .d-acct{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .d-acct .v{font-size:18px;font-weight:700;color:var(--tx)}
+  .d-acct .k{font-size:11px;color:var(--tx3);margin-top:4px}
+  .d-act-field{margin-bottom:10px}
+  .d-act-field label{display:block;font-size:12px;color:var(--tx2);margin-bottom:4px}
+  .d-act-field input,.d-act-field textarea{width:100%;box-sizing:border-box;background:var(--bg2);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit}
+  .d-act-field textarea{resize:vertical;min-height:46px}
+  @media(max-width:680px){.d-acct-grid{grid-template-columns:repeat(2,1fr);}}
   .d-alert-mask{position:fixed;inset:0;background:rgba(5,7,12,.8);z-index:99;display:none;align-items:center;justify-content:center;padding:20px}
   .d-alert-mask.show{display:flex}
   .d-alert-box{background:var(--card);border:2px solid var(--up);border-radius:14px;max-width:560px;width:100%;padding:24px;animation:d-alarm 1s infinite}
@@ -573,9 +583,10 @@
 
       <!-- 价格监控清单（每小时检查 + 警戒线强提醒） -->
       <div class="diag-sub" style="margin-top:18px">价格监控清单 <span style="font-size:11px;color:var(--tx3);font-weight:400">（每小时自动检查 · 触发止盈/止损警戒线时页面强提醒）</span></div>
+      <div id="d_accountBox" style="margin-bottom:6px"></div>
       <table class="diag-table">
-        <thead><tr><th>个股</th><th class="num">成本价</th><th class="num">最新价</th><th class="num">距止损</th><th class="num">距止盈①</th><th>状态</th><th>最近检查</th><th>操作</th></tr></thead>
-        <tbody id="d_watchBody"><tr><td colspan="8" style="color:var(--tx3)">暂无监控标的。生成持仓诊断后点「＋ 加入价格监控」即可。</td></tr></tbody>
+        <thead><tr><th>个股</th><th class="num">成本价</th><th class="num">最新价</th><th class="num">距止损</th><th class="num">距止盈①</th><th class="num">仓位%</th><th>状态</th><th>最近检查</th><th>操作</th></tr></thead>
+        <tbody id="d_watchBody"><tr><td colspan="9" style="color:var(--tx3)">暂无监控标的。生成持仓诊断后点「＋ 加入价格监控」即可。</td></tr></tbody>
       </table>
       <div class="diag-actions" style="margin-top:10px">
         <button class="btn-ghost" onclick="d_watchCheckAll(true)">立即检查全部</button>
@@ -600,6 +611,18 @@
       <h3>⚠️ 价格警戒线触发提醒</h3>
       <div id="d_alertList"></div>
       <button class="d-alert-btn" onclick="d_alertDismiss()">我已知晓（今日该级别不再重复提醒）</button>
+    </div>
+  </div>
+
+  <!-- 加仓/减仓/清仓 操作浮层 -->
+  <div id="d_actionMask" class="d-alert-mask">
+    <div class="d-alert-box" style="border-color:var(--gold);max-width:420px">
+      <h3 id="d_actionTitle" style="color:var(--gold)">操作</h3>
+      <div id="d_actionBody"></div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="d-alert-btn" style="background:var(--gold);color:#1a1205" onclick="d_confirmAction()">确认执行</button>
+        <button class="d-alert-btn ghost" style="border:1px solid var(--line);color:var(--tx2);background:transparent" onclick="d_closeAction()">取消</button>
+      </div>
     </div>
   </div>
 
@@ -894,7 +917,7 @@ function d_watchAddCurrent(){
   if(!d.tCode){ d_setStatus("该标的未识别出股票代码，无法自动监控（请用代码重新诊断）","diag-err"); return; }
   const list = d_watchLoad();
   const i = list.findIndex(x=>x.tCode===d.tCode);
-  const entry = { ...d, addedAt: Date.now(), lastCheck: null, lastStatus: "待检查", alerted: {} };
+  const entry = { ...d, addedAt: Date.now(), lastCheck: null, lastStatus: "待检查", alerted: {}, log: [] };
   if(i>=0) list[i]=entry; else list.push(entry);
   d_watchSave(list);
   d_renderWatch();
@@ -904,6 +927,92 @@ function d_watchAddCurrent(){
   d_watchCheckAll(false);
 }
 function d_watchRemove(tCode){ d_watchSave(d_watchLoad().filter(x=>x.tCode!==tCode)); d_renderWatch(); }
+// ============ 加仓 / 减仓 / 清仓 操作（同一账户活跃持仓） ============
+let d_actionCtx = null;
+function d_openAction(tCode, type){
+  const list = d_watchLoad();
+  const e = list.find(x=>x.tCode===tCode);
+  if(!e) return;
+  const held = (e.shares||0);
+  const px = e.lastPrice>0?e.lastPrice:e.cost;
+  d_actionCtx = { tCode, type };
+  const labelMap = { add:"加仓", reduce:"减仓", close:"清仓" };
+  let body;
+  if(type==="close"){
+    body = '<div style="color:var(--tx2);font-size:13px;margin-bottom:10px">将清仓「<b style="color:var(--tx)">'+e.name+'</b>」全部 '+d_fmt(held,0)+' 股。此操作记录为已实现盈亏，并从活跃持仓移除（历史记录保留）。</div>'+
+      '<div class="d-act-field"><label>清仓成交价（默认最新价）</label><input id="d_actPrice" type="number" step="0.01" value="'+px+'"></div>'+
+      '<div class="d-act-field"><label>清仓股数（默认全部）</label><input id="d_actShares" type="number" step="1" value="'+held+'"></div>'+
+      '<div class="d-act-field"><label>备注（可选）</label><textarea id="d_actNote" rows="2" placeholder="如：到达止盈②纪律离场 / 跌破强止损"></textarea></div>';
+  } else {
+    const verb = type==="add" ? "加仓买入" : "减仓卖出";
+    body = '<div style="color:var(--tx2);font-size:13px;margin-bottom:10px">对「<b style="color:var(--tx)">'+e.name+'</b>」'+verb+'。当前持仓 '+d_fmt(held,0)+' 股，成本 '+d_fmt(e.cost)+'。</div>'+
+      '<div class="d-act-field"><label>成交价</label><input id="d_actPrice" type="number" step="0.01" value="'+px+'"></div>'+
+      '<div class="d-act-field"><label>成交股数（'+(type==="add"?"买入":"卖出")+'）</label><input id="d_actShares" type="number" step="1" value=""></div>'+
+      '<div class="d-act-field"><label>备注（可选）</label><textarea id="d_actNote" rows="2" placeholder="如：回踩成本企稳加仓 / 触止盈①减仓锁利"></textarea></div>';
+  }
+  document.getElementById("d_actionTitle").textContent = labelMap[type] + " · " + e.name;
+  document.getElementById("d_actionBody").innerHTML = body;
+  document.getElementById("d_actionMask").classList.add("show");
+}
+function d_closeAction(){
+  d_actionCtx = null;
+  document.getElementById("d_actionMask").classList.remove("show");
+}
+function d_confirmAction(){
+  if(!d_actionCtx){ d_closeAction(); return; }
+  const price = parseFloat(document.getElementById("d_actPrice").value);
+  const shares = parseFloat(document.getElementById("d_actShares").value);
+  const note = (document.getElementById("d_actNote").value||"").trim();
+  if(!(price>0)){ alert("请填写有效成交价"); return; }
+  if(!(shares>0)){ alert("请填写有效成交股数"); return; }
+  d_watchAction(d_actionCtx.tCode, d_actionCtx.type, shares, price, note);
+  d_closeAction();
+}
+function d_watchAction(tCode, type, sharesIn, priceIn, note){
+  const list = d_watchLoad();
+  const i = list.findIndex(x=>x.tCode===tCode);
+  if(i<0) return;
+  const e = list[i];
+  const risk = D_RISK[e.riskKey] || D_RISK.balance;
+  const oldShares = e.shares||0;
+  const oldCost = e.cost||0;
+  const logEntry = { at: Date.now(), type, shares: sharesIn, price: priceIn, note: note||"", suggestion:"" };
+  let suggestion = "";
+  if(type==="add"){
+    const newShares = oldShares + sharesIn;
+    const newCost = (oldCost*oldShares + priceIn*sharesIn) / newShares;
+    e.shares = newShares;
+    e.cost = newCost;
+    e.levels = { hard: newCost*(1+risk.hard), stop: newCost*(1+risk.stop), tp1: newCost*(1+risk.tp1), tp2: newCost*(1+risk.tp2) };
+    suggestion = "加仓 "+d_fmt(sharesIn,0)+" 股 @ "+d_fmt(priceIn)+"：加权成本由 "+d_fmt(oldCost)+" 升至 "+d_fmt(newCost)+"。"
+      + (priceIn<=oldCost
+          ? "加仓价低于原成本，摊低成本；但须确认非下跌中继（所属板块净流出居前或破位下行时不宜加仓）。"
+          : "加仓价高于原成本，抬高持仓成本，宜仅在小级别企稳、仓位未满时执行。");
+  } else if(type==="reduce"){
+    const sellShares = Math.min(sharesIn, oldShares);
+    const realized = (priceIn - oldCost)*sellShares;
+    const remain = oldShares - sellShares;
+    e.shares = remain;
+    logEntry.realized = realized;
+    const pct = oldCost>0 ? ((priceIn-oldCost)/oldCost*100) : 0;
+    suggestion = "减仓 "+d_fmt(sellShares,0)+" 股 @ "+d_fmt(priceIn)+"：本笔实现"+(realized>=0?"盈利":"亏损")+" "+d_fmt(realized,0)+" 元（相对原成本 "+(pct>=0?"+":"")+pct.toFixed(2)+"%）。"
+      + (realized>=0 ? "兑现利润、降低集中度，剩余 "+d_fmt(remain,0)+" 股改移动止盈续持。" : "减仓控下行风险，剩余 "+d_fmt(remain,0)+" 股设更紧二次止损。");
+  } else {
+    const sellShares = Math.min(sharesIn, oldShares);
+    const realized = (priceIn - oldCost)*sellShares;
+    e.shares = 0;
+    logEntry.realized = realized;
+    const pct = oldCost>0 ? ((priceIn-oldCost)/oldCost*100) : 0;
+    suggestion = "清仓 "+d_fmt(sellShares,0)+" 股 @ "+d_fmt(priceIn)+"：本笔实现"+(realized>=0?"盈利":"亏损")+" "+d_fmt(realized,0)+" 元（"+(pct>=0?"+":"")+pct.toFixed(2)+"%）。"
+      + (realized>=0 ? "获利了结，资金回笼待下次机会。" : "纪律性止损/认错离场，保存实力，避免下行摊薄。");
+  }
+  logEntry.suggestion = suggestion;
+  e.log = e.log||[];
+  e.log.push(logEntry);
+  list[i] = e;
+  d_watchSave(list);
+  d_renderWatch();
+}
 function d_judgeLevel(e, price){
   const L=e.levels;
   if(price<=L.hard) return {key:"hard", cls:"down", label:"⛔ 触发强止损 "+d_fmt(L.hard), strong:true};
@@ -941,24 +1050,54 @@ async function d_watchCheckAll(manual){
 function d_renderWatch(){
   const list = d_watchLoad();
   const tb = document.getElementById("d_watchBody");
+  d_renderAccount();
   if(!tb) return;
-  if(!list.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--tx3)">暂无监控标的。生成持仓诊断后点「＋ 加入价格监控」即可。</td></tr>'; return; }
+  if(!list.length){ tb.innerHTML='<tr><td colspan="9" style="color:var(--tx3)">暂无监控标的。生成持仓诊断后点「＋ 加入价格监控」即可。</td></tr>'; return; }
+  const active = list.filter(e=>(e.shares||0)>0);
+  const totalValue = active.reduce((s,e)=> s + ((e.lastPrice>0?e.lastPrice:(e.cost||0))*(e.shares||0)), 0);
   tb.innerHTML = list.map(e=>{
     const px=e.lastPrice||0, L=e.levels;
     const dStop = px>0 ? ((px-L.stop)/px*100).toFixed(1)+"%" : "—";
     const dTp1  = px>0 ? ((L.tp1-px)/px*100).toFixed(1)+"%" : "—";
+    const mv = (px>0?px:(e.cost||0))*(e.shares||0);
+    const w = totalValue>0 ? (mv/totalValue*100).toFixed(1)+"%" : "—";
+    const held = (e.shares||0)>0;
     const t = e.lastCheck ? new Date(e.lastCheck).toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}) : "—";
+    const btns = held
+      ? `<button class="d-wbtn act" onclick="d_openAction('${e.tCode}','add')">加仓</button><button class="d-wbtn act" onclick="d_openAction('${e.tCode}','reduce')">减仓</button><button class="d-wbtn act" onclick="d_openAction('${e.tCode}','close')">清仓</button>`
+      : `<span style="color:var(--tx3);font-size:11px">已清仓</span>`;
     return `<tr>
       <td><b>${e.name}</b><br><span style="color:var(--tx3);font-size:11px">${e.tCode}</span></td>
       <td class="num">${d_fmt(e.cost)}</td>
       <td class="num" style="color:${px>=e.cost?'var(--up)':'var(--down)'}">${px>0?d_fmt(px):"—"}</td>
       <td class="num">${dStop}</td><td class="num">${dTp1}</td>
+      <td class="num">${w}</td>
       <td><span class="d-chip ${e.lastCls||'err'}">${e.lastStatus||"待检查"}</span></td>
       <td style="color:var(--tx3);font-size:12px">${t}</td>
-      <td><button class="d-wbtn" onclick="d_watchRemove('${e.tCode}')">移除</button></td>
+      <td>${btns} <button class="d-wbtn" onclick="d_watchRemove('${e.tCode}')">移除</button></td>
     </tr>`;
   }).join("");
   d_renderDecWatch();
+}
+function d_renderAccount(){
+  const box=document.getElementById("d_accountBox");
+  if(!box) return;
+  const list=d_watchLoad();
+  const active=list.filter(e=>(e.shares||0)>0);
+  if(!active.length){ box.innerHTML='<div style="color:var(--tx2);font-size:12px">暂无活跃持仓（持股&gt;0）。加入监控并填写股数后，此处自动把全部监控标的汇总为<b style="color:var(--tx)">同一账户</b>的总仓位、盈亏与单票占比。</div>'; return; }
+  let totalCost=0, totalValue=0;
+  active.forEach(e=>{ const px=e.lastPrice>0?e.lastPrice:e.cost; totalCost+=e.cost*e.shares; totalValue+=px*e.shares; });
+  const totalPnl=totalValue-totalCost;
+  const pct= totalCost>0? totalPnl/totalCost*100:0;
+  const maxW = totalValue>0? Math.max(...active.map(e=>((e.lastPrice>0?e.lastPrice:e.cost)*e.shares/totalValue*100))):0;
+  box.innerHTML = `<div class="d-acct-grid">
+    <div class="d-acct"><div class="v">${d_fmt(totalValue,0)}</div><div class="k">账户总市值（元）</div></div>
+    <div class="d-acct"><div class="v">${d_fmt(totalCost,0)}</div><div class="k">总持仓成本（元）</div></div>
+    <div class="d-acct"><div class="v" style="color:${d_cls(totalPnl)}">${totalPnl>=0?'+':''}${d_fmt(totalPnl,0)}</div><div class="k">总浮动盈亏（元）</div></div>
+    <div class="d-acct"><div class="v" style="color:${d_cls(totalPnl)}">${pct>=0?'+':''}${pct.toFixed(2)}%</div><div class="k">总盈亏率</div></div>
+    <div class="d-acct"><div class="v">${active.length}</div><div class="k">活跃持仓标的数</div></div>
+    <div class="d-acct"><div class="v" style="color:var(--gold)">${maxW.toFixed(1)}%</div><div class="k">单票最大占比</div></div>
+  </div>`;
 }
 function d_renderDecWatch(){
   const box=document.getElementById("d_decWatchList");
@@ -1011,6 +1150,23 @@ function d_renderDecWatch(){
     }
     const pxTxt=px>0?d_fmt(px):"—";
     const pnlTxt=(pnl!==null)?'<span style="color:'+(pnl>=0?'var(--up)':'var(--down)')+'">'+(pnl>=0?'+':'')+pnl.toFixed(1)+'%</span>':'—';
+    let logHtml="";
+    if(e.log && e.log.length){
+      const tlabelMap={add:"加仓",reduce:"减仓",close:"清仓"};
+      logHtml='<div style="margin-top:10px;border-top:1px dashed var(--line);padding-top:8px">'+
+        '<div style="font-size:11px;color:var(--tx3);margin-bottom:6px">操作记录（'+e.log.length+' 笔）</div>'+
+        e.log.slice().reverse().map(function(l){
+          const tm=new Date(l.at).toLocaleString("zh-CN",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+          const tlabel=tlabelMap[l.type]||l.type;
+          const rc=(l.realized!=null)?' <span style="color:'+d_cls(l.realized)+'">已实现 '+(l.realized>=0?"+":"")+d_fmt(l.realized,0)+'元</span>':'';
+          const note=l.note?' <span style="color:var(--tx2)">（'+l.note+'）</span>':'';
+          return '<div style="font-size:12px;color:var(--tx2);line-height:1.7;margin-bottom:6px">'+
+            '<span style="color:var(--tx)">'+tm+' · '+tlabel+' '+d_fmt(l.shares,0)+'股 @ '+d_fmt(l.price)+'</span>'+rc+note+
+            '<div style="color:var(--acc);line-height:1.7">→ '+l.suggestion+'</div>'+
+          '</div>';
+        }).join("")+
+      '</div>';
+    }
     return '<div style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--card2)">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'+
         '<div><b style="color:var(--tx);font-size:13px">'+e.name+'</b> <span style="color:var(--tx3);font-size:11px">'+e.tCode+'</span></div>'+tag+
@@ -1021,6 +1177,7 @@ function d_renderDecWatch(){
         '<span>浮盈亏 '+pnlTxt+'</span>'+
       '</div>'+
       '<div style="color:var(--tx2);line-height:1.8">'+advice+'</div>'+
+      logHtml+
     '</div>';
   }).join("");
 }

@@ -81,6 +81,24 @@
   .alert-item.down{border-left-color:var(--green);}
   .alert-btn{width:100%;background:linear-gradient(135deg,#e3a008,#f59e0b);color:#1a1205;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;}
   @media(max-width:760px){.grid{grid-template-columns:1fr;}.kpis{grid-template-columns:repeat(3,1fr);}}
+  /* ===== 止损/止盈触发后应对决策卡（嵌入持仓诊断页） ===== */
+  .dec-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+  .dec-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px}
+  .dec-box h4{font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:6px;line-height:1.4}
+  .dec-box.gold h4{color:var(--gold)} .dec-box.danger h4{color:var(--red)}
+  .dec-box ul{margin:0;padding-left:18px;font-size:12.5px;color:var(--muted);line-height:1.85}
+  .dec-box ul b{color:var(--text)}
+  .dec-matrix{width:100%;border-collapse:collapse;font-size:12.5px;margin:12px 0}
+  .dec-matrix th,.dec-matrix td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  .dec-matrix th{background:var(--card2);color:var(--muted);font-weight:600}
+  .dec-matrix td{color:var(--muted)} .dec-matrix td b{color:var(--text)}
+  .dec-steps{counter-reset:step;margin:12px 0;padding:0;list-style:none}
+  .dec-steps li{position:relative;padding:8px 8px 8px 38px;font-size:12.5px;color:var(--muted);border-bottom:1px dashed var(--border);line-height:1.7}
+  .dec-steps li:last-child{border-bottom:none}
+  .dec-steps li::before{counter-increment:step;content:counter(step);position:absolute;left:8px;top:8px;width:22px;height:22px;border-radius:50%;
+    background:linear-gradient(135deg,var(--gold),#f59e0b);color:#1a1205;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .dec-steps li b{color:var(--text)}
+  @media(max-width:760px){.dec-grid{grid-template-columns:1fr;}}
 </style>
 <!-- ===== WB 私密门禁样式（未通过前隐藏正文，防闪烁） ===== -->
 <style id="wbGateCss">
@@ -167,6 +185,62 @@
     <div class="row" style="margin-top:12px">
       <button class="btn ghost" onclick="watchCheckAll(true)">立即检查全部</button>
       <div id="watchStatus" style="flex:1;font-size:12px;color:var(--muted);align-self:center"></div>
+    </div>
+  </div>
+
+  <!-- ===== 止损/止盈触发后应对决策卡（嵌入持仓诊断页） ===== -->
+  <div class="card">
+    <h2><span class="bar"></span>止盈/止损触发后 · 应对决策卡</h2>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:12px">警戒线触发却未执行减仓时，按「破位真伪 + 板块动量 + 基本面催化」三因子做二次决策（仅供参考，非自动交易）</div>
+
+    <div class="advice" style="border-left-color:var(--gold)">
+      <b>核心原则：</b>止盈未减仓 → 可宽容，切换<b>移动止盈</b>（最高点回撤 8%~12% 离场），严禁“回到原止盈价再卖”的锚定心理；
+      止损未减仓 → 最高优先级，破位即默认离场，最多给一次反弹确认，<b>禁止在下行中补仓摊薄</b>。
+    </div>
+
+    <div class="dec-grid">
+      <div class="dec-box gold">
+        <h4>🟡 场景 A · 止盈点已触及但没减仓</h4>
+        <ul>
+          <li>沿 5/10 日线爬升、量价齐升、<b>无顶背离</b> → 不止盈，改设<b>移动止盈线</b>，吃鱼身</li>
+          <li>放量滞涨、<b>MACD 顶背离</b>、跌破 5 日线、板块龙头炸板/跌停 → <b>立即按原计划减仓</b></li>
+          <li>所属板块催化窗口<b>未关闭</b>（政策/业绩/事件未落地）→ 可持有；<b>利好出尽</b> → 获利了结</li>
+        </ul>
+      </div>
+      <div class="dec-box danger">
+        <h4>🔴 场景 B · 止损点已触及但没减仓（最高优先级）</h4>
+        <ul>
+          <li><b>真破位</b>（放量破前低/20·60 日线、MACD 死叉、板块净流出居前、出利空）→ 次日任何反弹/开盘即减仓至清</li>
+          <li><b>假破位</b>（缩量回踩支撑不破、长下影、板块仍强、无新利空）→ 设更紧二次止损，给 1~2 日观察，反弹不过前高即离场</li>
+          <li>禁止动作：破位下行中<b>补仓摊低成本</b>（除非有独立建仓逻辑与资金计划）</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 style="font-size:13px;margin:14px 0 6px;color:var(--text)">统一决策矩阵 · 市场信息 × 技术指标</h4>
+    <table class="dec-matrix">
+      <thead><tr><th>维度</th><th>止盈未减仓</th><th>止损未减仓</th></tr></thead>
+      <tbody>
+        <tr><td><b>量能</b></td><td>量价齐升→持有；放量滞涨→卖</td><td>缩量假破→观察；放量破位→离场</td></tr>
+        <tr><td><b>均线</b></td><td>在 5/10 日线上→持有</td><td>跌破 20/60 日线→离场信号</td></tr>
+        <tr><td><b>背离</b></td><td>MACD 顶背离→减</td><td>MACD 死叉→减</td></tr>
+        <tr><td><b>板块动量</b></td><td>主线仍热→持有</td><td>板块资金净流出居前→离场</td></tr>
+        <tr><td><b>催化</b></td><td>未兑现→持有；出尽→卖</td><td>出新利空→立即离场</td></tr>
+        <tr><td><b>动作默认</b></td><td>移动止盈</td><td>破位即减，不补仓</td></tr>
+      </tbody>
+    </table>
+
+    <h4 style="font-size:13px;margin:14px 0 6px;color:var(--text)">触发后的下一步动作（按优先级）</h4>
+    <ol class="dec-steps">
+      <li>复核触发状态：当前价相对你设置的警戒线<b>偏离多少</b>？真破还是假破？（用本页监控浮层确认触发级别）</li>
+      <li>看板块：所属板块当日<b>资金净流入/净流出</b>？连板梯队是否还在？（参考当日盘后复盘报告模块2）</li>
+      <li>看个股技术：是否跌破关键<b>均线/支撑</b>？MACD/KDJ 状态？量能变化？</li>
+      <li>决策并执行：按上述矩阵给动作，设好<b>二次确认位</b>（二次止损 / 移动止盈线）</li>
+      <li>归因复盘：把这次“未执行”记入交易日志，定位<b>纪律缺口</b>（贪 / 怕 / 信息滞后）</li>
+    </ol>
+
+    <div class="advice" style="border-left-color:var(--red)">
+      <b>风控纪律（PMO 视角）：</b>把止损当成<b>项目止损线</b>——立项有验收标准，破线即叫停，不因沉没成本继续投入。单票占比设上限，触发止损不犹豫，这是保命线不是成本线。
     </div>
   </div>
 

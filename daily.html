@@ -97,7 +97,7 @@
   .fw h4{font-size:13px;color:var(--gold);margin-bottom:10px;font-weight:600;display:flex;align-items:center;gap:6px}
   .fw-item{display:flex;gap:10px;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)}
   .fw-item:last-of-type{border-bottom:none}
-  .fw-item .when{flex-shrink:0;font-size:12px;color:var(--gold);font-weight:600;width:86px}
+  .fw-item .when{flex-shrink:0;font-size:12px;color:var(--gold);font-weight:600;width:96px}
   .fw-item .what{color:var(--tx2)} .fw-item .what b{color:var(--tx)}
   .fw-view{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--tx2);line-height:1.75}
   .fw-view b{color:var(--gold)}
@@ -216,7 +216,9 @@
   .d-alert-item.down{border-left-color:var(--down)}
   .d-alert-btn{width:100%;background:linear-gradient(135deg,#e3a008,#f0b90b);color:#1a1205;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px}
 
-  /* Disclaimer */
+  /* Disclaimer & demo */
+  .demo-note{margin-top:18px;padding:12px 18px;border:1px dashed var(--gold);border-radius:10px;
+             background:rgba(240,185,11,.06);color:var(--gold);font-size:12.5px;text-align:center}
   .foot{margin-top:20px;padding:16px 22px;background:var(--card);border:1px solid var(--line);
         border-radius:var(--radius);font-size:12px;color:var(--tx3);text-align:center;line-height:1.8}
   .foot b{color:var(--tx2)}
@@ -271,8 +273,8 @@
     <div style="display:flex;align-items:center;gap:16px">
       <span class="badge post">盘后复盘</span>
       <div class="meta">
-        <b>2026-08-14</b>
-        复盘于 08-16 · 自动任务回溯
+        <b>2026-08-21</b>
+        生成于 15:52 · 自动任务
       </div>
       <button class="btn-refresh" id="wbRefreshBtn" onclick="wbRefresh()" title="从服务器重新拉取最新报告">🔄 刷新</button>
     </div>
@@ -284,10 +286,10 @@
     <div class="sec-hd"><span class="no">◆</span><h2>今日核心结论</h2><span class="tag">一屏速览</span></div>
     <div class="sec-bd">
       <div class="kpis">
-        <div class="kpi"><div class="k">市场温度</div><div class="v gold">分化 46°</div><div class="d">涨停64 / 跌停13</div></div>
-        <div class="kpi"><div class="k">大盘状态</div><div class="v acc">窄幅震荡</div><div class="d">上证 +0.01%</div></div>
-        <div class="kpi"><div class="k">今日主线</div><div class="v up">CPO/光通信</div><div class="d">稀土 · 算力租赁</div></div>
-        <div class="kpi"><div class="k">仓位建议</div><div class="v">4-5成</div><div class="d">科技内部分化</div></div>
+        <div class="kpi"><div class="k">市场温度</div><div class="v gold">分化 44°</div><div class="d">涨停54 / 跌停14</div></div>
+        <div class="kpi"><div class="k">大盘状态</div><div class="v acc">窄幅震荡</div><div class="d">上证 +0.04%</div></div>
+        <div class="kpi"><div class="k">今日主线</div><div class="v up">贵金属/有色</div><div class="d">避险+商品共振</div></div>
+        <div class="kpi"><div class="k">仓位建议</div><div class="v">4-5成</div><div class="d">分歧日控仓</div></div>
       </div>
     </div>
   </section>
@@ -297,30 +299,32 @@
     <div class="sec-hd"><span class="no">1</span><h2>财经与宏观速览</h2><span class="tag">12条 · 板块映射 · 前瞻研判</span></div>
     <div class="sec-bd">
       <ul class="news">
-        <li><span class="ic pol">政</span><div class="bd"><p><b>央行8/14开展10000亿元6个月买断式逆回购</b>，<span>为到期等量续作、超出市场缩量预期，打消资金面收紧担忧，为权益市场提供流动性托底。</span></p>
-          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 银行 / 券商 / 成长 / 流动性敏感</span></div></div></li>
-        <li><span class="ic pol">政</span><div class="bd"><p><b>央行+外汇局发布跨国公司本外币跨境资金集中运营全国推广</b>，<span>9月14日起施行，自贸区建池门槛降低，便利跨境资金归集。</span></p>
-          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 跨境金融 / 自贸区银行 / 出海企业</span></div></div></li>
-        <li><span class="ic">讯</span><div class="bd"><p><b>新闻联播：通信网年内投资8000亿-1万亿</b>，<span>"六张网"含新型电网、算力网、通信网，直接利好通信设备与光纤光缆产业链。</span></p>
-          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 通信设备 / 光纤光缆 / 算力网络</span></div></div></li>
-        <li><span class="ic pol">政</span><div class="bd"><p><b>四部门公告2026-2028集成电路/工业母机税收优惠</b>，<span>非货币性资产交换所得可在不超过5年内分期计入应税所得，降低企业重组税负。</span></p>
-          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 半导体 / 工业母机</span></div></div></li>
-        <li><span class="ic macro">宏</span><div class="bd"><p><b>中芯国际Q2营收首破30亿美元</b>，<span>销售收入30.06亿美元同比+36.1%、环比+20%，毛利率25.3%超指引，验证晶圆代工景气。</span></p>
-          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 半导体设备 / 晶圆代工 / 国产替代</span></div></div></li>
-        <li><span class="ic">讯</span><div class="bd"><p><b>中际旭创拟17.47亿受让中石科技10.47%股份</b>，<span>CPO龙头向上游散热材料延伸布局，强化产业链协同预期。</span></p>
-          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ CPO / 中石科技（散热）</span></div></div></li>
-        <li><span class="ic">讯</span><div class="bd"><p><b>首部数据中心液冷国标获批</b>，<span>液冷服务器纳入标准化赛道，产业渗透率提升确定性增强。</span></p>
-          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 液冷服务器 / 数据中心温控</span></div></div></li>
-        <li><span class="ic">讯</span><div class="bd"><p><b>英伟达Feynman平台提前布局 + Lumentum Q4营收10.1亿美元超预期</b>，<span>海外算力链景气延续，映射A股CPO/光模块方向。</span></p>
-          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ CPO / 光模块 / 1.6T</span></div></div></li>
-        <li><span class="ic macro">宏</span><div class="bd"><p><b>美国7月CPI同比+3.4%符合预期、PPI+4.7%低于预期</b>，<span>通胀压力缓解，大幅弱化美联储加息概率，利好成长股估值。</span></p>
-          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 成长科技 / 风险偏好</span></div></div></li>
-        <li><span class="ic">讯</span><div class="bd"><p><b>DeepSeek公布API调价方案</b>，<span>机构指出价格上调是算力供需矛盾的直接证据，算力紧缺仍具确定性。</span></p>
-          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 算力租赁 / AI基础设施</span></div></div></li>
-        <li><span class="ic pol">政</span><div class="bd"><p><b>上半年新增专项债发行进度达47%</b>，<span>资金投向市政、交通、城市更新，积极财政政策持续发力。</span></p>
-          <div class="tags"><span class="imp neu">中性偏多</span><span class="imp-lb">→ 基建 / 城投链条</span></div></div></li>
-        <li><span class="ic">讯</span><div class="bd"><p><b>高位股集体回调、医药板块净流出32.49亿</b>，<span>秦安股份/宝鹰股份/德龙汇能/京投发展等跌停，连板退潮与医药内部分化压制短线情绪。</span></p>
-          <div class="tags"><span class="imp bad">利空</span><span class="imp-lb">→ 高位连板 / 医药短线 / 情绪退潮</span></div></div></li>
+        <li><span class="ic macro">宏</span><div class="bd"><p><b>8月LPR报价出炉：1年期3.0%、5年期以上3.5%，均与7月持平</b>，<span>连续15个月维持不变；东方金诚预计后期央行或实施政策性降息带动LPR跟进，三季度末存降准降息可能。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 券商 / 成长科技 / 红利</span></div></div></li>
+        <li><span class="ic pol">政</span><div class="bd"><p><b>中瑞自贸协定升级谈判完成并签署备忘录</b>，<span>在货物、服务、投资、规则等领域作出更高水平双向开放，为两国经贸合作创造新机遇。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 跨境贸易 / 出口链 / 跨境电商</span></div></div></li>
+        <li><span class="ic pol">政</span><div class="bd"><p><b>发改委召开民企座谈会谋划增量政策；财政部明确下半年还有2万多亿专项债与超长特别国债待发</b>，<span>保持政策强度、稳经济预期。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 基建 / 稳增长 / 民企</span></div></div></li>
+        <li><span class="ic pol">政</span><div class="bd"><p><b>上海8月21日起优化房地产政策</b>，<span>首套商贷最低首付统一15%，二套外环外15%，推行"以旧换新"购房补贴、房票安置等8项措施。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 地产 / 建材 / 家居</span></div></div></li>
+        <li><span class="ic">讯</span><div class="bd"><p><b>台积电完成1.6nm级A16工艺开发与验证，计划Q4量产</b>，<span>瞄准AI与高性能计算，同等功耗性能提升8%-10%，先进制程国产替代链受益。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 半导体设备 / 先进封装</span></div></div></li>
+        <li><span class="ic">讯</span><div class="bd"><p><b>AI服务器需求叠加产能紧张，高端电子纱"一纱难求"</b>，<span>电子布涨价品类从高端品向常规品蔓延，CCL环节传导。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ PCB / CCL覆铜板</span></div></div></li>
+        <li><span class="ic">讯</span><div class="bd"><p><b>阿里2027财年Q1云收入同比+45%、AI相关产品收入+133%</b>，<span>AI商业化全面提速，连续十二个季度三位数增长，算力需求确定性再强化。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ AI云 / 算力 / IDC</span></div></div></li>
+        <li><span class="ic macro">宏</span><div class="bd"><p><b>美财长释放国债回购扩规模信号，美债收益率受压；现货黄金盘中破4600、收报4543创阶段新高</b>，<span>长期实际利率下行预期支撑贵金属。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 贵金属 / 黄金股</span></div></div></li>
+        <li><span class="ic">讯</span><div class="bd"><p><b>美国对伊朗实施"史上最严厉"制裁，霍尔木兹通航持续受限，WTI原油重返86美元附近</b>，<span>避险与能源线受益，但整体风险资产偏好受抑。</span></p>
+          <div class="tags"><span class="imp good">利好</span><span class="imp-lb">→ 油气开采 / 黄金避险（风险资产承压）</span></div></div></li>
+        <li><span class="ic">讯</span><div class="bd"><p><b>隔夜美股收跌：道指-1.3%、标普-0.87%、纳指-1%</b>，<span>大型科技股普跌，中概金龙指数-1.15%，外围科技叙事转弱。</span></p>
+          <div class="tags"><span class="imp bad">利空</span><span class="imp-lb">→ 风险偏好 / A股科技映射 / 外资</span></div></div></li>
+        <li><span class="ic macro">宏</span><div class="bd"><p><b>7月规上工业增加值同比+4.5%放缓，高技术制造+13.8%亮眼；社零仅+0.6%放缓</b>，<span>供强需弱延续，内需偏弱，结构上的高技术制造仍是亮点。</span></p>
+          <div class="tags"><span class="imp bad">利空</span><span class="imp-lb">→ 大消费 / 白酒食饮（结构利好高技术制造）</span></div></div></li>
+        <li><span class="ic">讯</span><div class="bd"><p><b>隔夜Moderna跌超20%，默沙东mRNA疫苗III期达终点但板块分化</b>，<span>昨日高潮的A股医药（疫苗/CRO/创新药）大幅回调，哈药、哈三联等多股跌停。</span></p>
+          <div class="tags"><span class="imp bad">利空</span><span class="imp-lb">→ 疫苗 / CRO / 创新药</span></div></div></li>
+        <li><span class="ic pol">政</span><div class="bd"><p><b>恒大集团一审宣判：许家印无期徒刑，恒大/恒大地产合计罚金158.2亿元</b>，<span>地产风险出清标志性事件，短期情绪扰动、长期利于风险定价回归。</span></p>
+          <div class="tags"><span class="imp neu">中性偏空</span><span class="imp-lb">→ 地产链（短期情绪 / 长期出清）</span></div></div></li>
       </ul>
 
       <!-- 板块影响小结 -->
@@ -328,85 +332,103 @@
         <div class="impact-box good">
           <h4>▲ 消息面偏多板块</h4>
           <div class="chip-line">
-            <span class="chip good">CPO/光通信</span><span class="chip good">通信设备</span>
-            <span class="chip good">半导体设备</span><span class="chip good">稀土/小金属</span>
-            <span class="chip good">液冷服务器</span><span class="chip good">工业母机</span>
-            <span class="chip good">跨境金融</span><span class="chip good">算力租赁</span>
+            <span class="chip good">贵金属/黄金</span><span class="chip good">有色金属/锂矿</span>
+            <span class="chip good">油气</span><span class="chip good">半导体设备</span><span class="chip good">PCB/CCL</span>
+            <span class="chip good">AI云算力</span><span class="chip good">基建</span><span class="chip good">券商</span><span class="chip good">地产链</span>
           </div>
-          <div class="why">万亿逆回购托底 + 通信网8000亿投资 + 集成电路税收优惠 + 中芯国际业绩 + 液冷国标五重政策/产业催化共振，科技硬件消息面密度最高。</div>
+          <div class="why">避险（美债收益率下行+黄金新高+美伊制裁）+ 商品（锂价企稳+电子布涨价）+ 政策（专项债/上海地产/中瑞FTA）+ 产业（台积电A16/阿里云）四线共振，消息面密度集中于资源与硬科技。</div>
         </div>
         <div class="impact-box bad">
           <h4>▼ 消息面偏空板块</h4>
           <div class="chip-line">
-            <span class="chip bad">高位连板股</span><span class="chip bad">医药生物</span>
-            <span class="chip bad">电力/公用事业</span><span class="chip bad">电子高位</span>
-            <span class="chip bad">影视院线</span><span class="chip bad">传媒</span><span class="chip bad">白酒</span>
+            <span class="chip bad">疫苗/CRO</span><span class="chip bad">创新药</span>
+            <span class="chip bad">大消费</span><span class="chip bad">种业/农业</span><span class="chip bad">高位连板</span><span class="chip bad">风险偏好</span>
           </div>
-          <div class="why">高位连板退潮（13只跌停）+ 医药净流出32.49亿 + 电子净流出53.78亿 + 电力/公用事业重挫，短线资金从高位与防御向科技低位切换。</div>
+          <div class="why">Moderna拖累+隔夜美股科技普跌压制风险偏好；社零走弱使大消费承压；种业/农业集体下挫；连板高度降至3板、高位股负反馈扩散，纯题材高位股博弈价值下降。</div>
         </div>
       </div>
 
       <!-- 前瞻研判 -->
       <div class="fw">
         <h4>◈ 前瞻研判 · 未来一周关键催化</h4>
-        <div class="fw-item"><span class="when">8/17 周一</span><span class="what"><b>世界机器人大会召开</b>，宇树链/人形机器人题材有事件驱动，关注会前埋伏与会后兑现节奏</span></div>
-        <div class="fw-item"><span class="when">8/17 周一</span><span class="what"><b>中国稀土能否2板</b>，确认资源线（稀土/小金属）反转成线还是一日游；蓝盾光电6板定高度龙归属</span></div>
-        <div class="fw-item"><span class="when">本周</span><span class="what"><b>中报密集披露期</b>，市场从"估值消化"切换至"盈利驱动"，业绩预增方向（光模块/半导体设备）确定性溢价，需防业绩雷</span></div>
-        <div class="fw-item"><span class="when">9/14 起</span><span class="what"><b>跨境资金集中运营全国施行</b>（远期），跨境金融/自贸区银行中长期受益</span></div>
-        <div class="fw-item"><span class="when">9/15-16</span><span class="what"><b>FOMC议息</b>（预期管理窗口），美CPI落地后观察降息路径对成长股影响</span></div>
-        <div class="fw-view"><b>前瞻结论：</b>科技主线内部剧烈分化（CPO强、电子整体弱），指数短期维持区间震荡、慢牛基础未变。周一主攻方向：①CPO/光通信低位补涨（光纤/液冷/交换机/1.6T）；②稀土资源线2板确认；③算力租赁延续。高位连板退潮（4板断层、13只跌停）需坚决回避，中报季聚焦业绩兑现、规避高估值无业绩支撑标的。</div>
+        <div class="fw-item"><span class="when">8/21–8/31</span><span class="what"><b>中报密集披露窗口</b>（交易所规定8/31前），业绩兑现与暴雷并存，向"业绩+景气"双验证方向靠拢</span></div>
+        <div class="fw-item"><span class="when">8月下旬</span><span class="what"><b>美联储杰克逊霍尔全球央行年会</b>（具体日程以官方为准），鲍威尔讲话影响降息预期与美债走向</span></div>
+        <div class="fw-item"><span class="when">8月底/9月初</span><span class="what"><b>7月规上工业企业利润、8月PMI</b>陆续公布，验证制造业景气与内需成色</span></div>
+        <div class="fw-item"><span class="when">下半年</span><span class="what"><b>专项债与超长特别国债加速发行</b>（财政部已明确待发规模），基建链订单与资金面改善</span></div>
+        <div class="fw-item"><span class="when">Q4节点</span><span class="what"><b>台积电A16量产临近</b>，半导体设备/先进封装催化；世界机器人大会(8/17)后宇树上市链条持续性观察</span></div>
+        <div class="fw-view"><b>前瞻结论：</b>当前为<b>分歧退潮日</b>——指数微涨但个股跌多涨少、成交缩量跌破2万亿、连板高度降至3板、高位股负反馈明显。① <b>避险+商品线</b>（贵金属/有色/锂矿）已显强度，若美债收益率延续下行、黄金站稳4500有望延续，但追涨需严控仓位；② <b>算力硬件</b>（光通信/PCB）急跌后修复，SK海力士CPO论文+阿里云capex支撑中长期逻辑，但受美股科技回调与高位获利盘压制，宜等回踩低吸而非追高；③ 中报窗口（至8/31）业绩分化加剧，回避纯题材高位股，事件落地前控仓，等待外围叙事（美联储/美债）与量能回升确认。</div>
       </div>
     </div>
   </section>
 
   <!-- ===== 模块2 热门板块与资金走向 ===== -->
   <section class="sec">
-    <div class="sec-hd"><span class="no">2</span><h2>热门板块与资金走向</h2><span class="tag">资金驱动 · 真实收盘</span></div>
+    <div class="sec-hd"><span class="no">2</span><h2>热门板块与资金走向</h2><span class="tag">资金驱动</span></div>
     <div class="sec-bd">
-      <div class="bar-row"><span class="nm">通信</span><div class="bar-track"><div class="bar-fill up" style="width:96%">+3.45%</div></div></div>
-      <div class="bar-row"><span class="nm">建筑材料</span><div class="bar-track"><div class="bar-fill up" style="width:62%">+1.82%</div></div></div>
-      <div class="bar-row"><span class="nm">煤炭</span><div class="bar-track"><div class="bar-fill up" style="width:52%">+1.51%</div></div></div>
-      <div class="bar-row"><span class="nm">有色金属</span><div class="bar-track"><div class="bar-fill up" style="width:44%">+1.30%</div></div></div>
-      <div class="bar-row"><span class="nm">电子</span><div class="bar-track"><div class="bar-fill up" style="width:44%">+1.30%</div></div></div>
-      <div class="bar-row"><span class="nm">机械设备</span><div class="bar-track"><div class="bar-fill up" style="width:36%">+1.01%</div></div></div>
-      <div class="bar-row"><span class="nm">房地产</span><div class="bar-track"><div class="bar-fill down" style="width:33%">-0.98%</div></div></div>
-      <div class="bar-row"><span class="nm">医药生物</span><div class="bar-track"><div class="bar-fill down" style="width:30%">-0.82%</div></div></div>
-      <div class="bar-row"><span class="nm">非银金融</span><div class="bar-track"><div class="bar-fill down" style="width:48%">-1.49%</div></div></div>
-      <div class="bar-row"><span class="nm">公用事业</span><div class="bar-track"><div class="bar-fill down" style="width:58%">-1.75%</div></div></div>
+      <div class="bar-row"><span class="nm">贵金属</span><div class="bar-track"><div class="bar-fill up" style="width:93%">+4.64%</div></div></div>
+      <div class="bar-row"><span class="nm">能源金属</span><div class="bar-track"><div class="bar-fill up" style="width:92%">+4.60%</div></div></div>
+      <div class="bar-row"><span class="nm">通信设备</span><div class="bar-track"><div class="bar-fill up" style="width:62%">+2.98%</div></div></div>
+      <div class="bar-row"><span class="nm">有色金属</span><div class="bar-track"><div class="bar-fill up" style="width:58%">+2.72%</div></div></div>
+      <div class="bar-row"><span class="nm">工业金属</span><div class="bar-track"><div class="bar-fill up" style="width:52%">+2.42%</div></div></div>
+      <div class="bar-row"><span class="nm">小金属</span><div class="bar-track"><div class="bar-fill up" style="width:46%">+2.10%</div></div></div>
+      <div class="bar-row"><span class="nm">石油石化</span><div class="bar-track"><div class="bar-fill up" style="width:32%">+1.36%</div></div></div>
+      <div class="bar-row"><span class="nm">白酒/食品</span><div class="bar-track"><div class="bar-fill down" style="width:34%">-1.80%</div></div></div>
+      <div class="bar-row"><span class="nm">医药生物</span><div class="bar-track"><div class="bar-fill down" style="width:52%">-3.00%</div></div></div>
+      <div class="bar-row"><span class="nm">农林牧渔</span><div class="bar-track"><div class="bar-fill down" style="width:64%">-4.20%</div></div></div>
 
       <div class="flow">
         <div class="flow-box">
-          <h4>主力资金净流入 TOP（申万一级 · 数据宝口径）</h4>
-          <div class="flow-item"><span>通信</span><span class="amt v up" style="color:var(--up)">+141.11亿</span></div>
-          <div class="flow-item"><span>食品饮料</span><span class="amt" style="color:var(--up)">+11.83亿</span></div>
-          <div class="flow-item"><span>建筑材料</span><span class="amt" style="color:var(--up)">+11.40亿</span></div>
-          <div class="flow-item"><span>有色金属</span><span class="amt" style="color:var(--up)">+8.44亿</span></div>
-          <div class="flow-item"><span>房地产</span><span class="amt" style="color:var(--up)">+4.42亿</span></div>
+          <h4>主力资金净流入方向（板块涨跌幅代理）</h4>
+          <div class="flow-item"><span>贵金属 / 黄金</span><span class="amt v up" style="color:var(--up)">板块 +4.64%</span></div>
+          <div class="flow-item"><span>能源金属 / 锂矿</span><span class="amt" style="color:var(--up)">板块 +4.60%</span></div>
+          <div class="flow-item"><span>通信设备 / 光通信</span><span class="amt" style="color:var(--up)">板块 +2.98%</span></div>
+          <div class="flow-item"><span>有色金属</span><span class="amt" style="color:var(--up)">板块 +2.72%</span></div>
         </div>
         <div class="flow-box">
-          <h4>主力资金净流出 TOP（申万一级 · 数据宝口径）</h4>
-          <div class="flow-item"><span>电子</span><span class="amt" style="color:var(--down)">-53.78亿</span></div>
-          <div class="flow-item"><span>公用事业</span><span class="amt" style="color:var(--down)">-45.02亿</span></div>
-          <div class="flow-item"><span>非银金融</span><span class="amt" style="color:var(--down)">-34.59亿</span></div>
-          <div class="flow-item"><span>医药生物</span><span class="amt" style="color:var(--down)">-32.49亿</span></div>
-          <div class="flow-item"><span>传媒</span><span class="amt" style="color:var(--down)">-21.70亿</span></div>
+          <h4>主力资金净流出方向（板块涨跌幅代理）</h4>
+          <div class="flow-item"><span>农林牧渔 / 种业</span><span class="amt" style="color:var(--down)">板块 -4.20%</span></div>
+          <div class="flow-item"><span>医药生物 / CRO</span><span class="amt" style="color:var(--down)">板块 -3.00%</span></div>
+          <div class="flow-item"><span>白酒 / 食品饮料</span><span class="amt" style="color:var(--down)">板块 -1.80%</span></div>
+          <div class="flow-item"><span>高位连板 / 纯题材</span><span class="amt" style="color:var(--down)">负反馈扩散</span></div>
         </div>
       </div>
+      <p style="font-size:11.5px;color:var(--tx3);margin-top:10px">注：本日主力净流入/流出<b>精确净额数据源未覆盖</b>，以上以板块涨跌幅与盘口承接为代理方向，非逐股资金净额；个股层面中油资本盘中主力净流入约3949万元（新浪分时口径）可作参考。</p>
 
-      <div class="flow" style="margin-top:14px">
-        <div class="flow-box">
-          <h4>概念/个股资金亮点（当日）</h4>
-          <div class="flow-item"><span>光通信（周）</span><span class="amt" style="color:var(--up)">+122亿</span></div>
-          <div class="flow-item"><span>亨通光电 特大单</span><span class="amt" style="color:var(--up)">+32.72亿</span></div>
-          <div class="flow-item"><span>CPO三剑客（新易盛/天孚/中际旭创）</span><span class="amt" style="color:var(--up)">+18.4/12.6/9.0亿</span></div>
-          <div class="flow-item"><span>网宿科技（算力租赁）</span><span class="amt" style="color:var(--up)">+20.55亿</span></div>
+      <div style="margin-top:18px">
+        <div class="diag-sub">情绪周期定位</div>
+        <p style="font-size:13px;color:var(--tx2)">分歧退潮日：沪指微涨+0.04%但全市场超2800只个股下跌，成交缩量至1.88万亿（跌破2万亿）；涨停54只、连板11只、封板率75%、连板晋级率仅25%，连板高度降至3板（汉森制药）；一鸣食品、传智教育、哈药股份等高位股跌停，负反馈扩散。市场温度研判 <b style="color:var(--gold)">分化 44°</b>，仓位建议 <b style="color:var(--tx)">4-5成</b>。</p>
+
+        <div class="diag-sub">连板天梯（2026-08-21）</div>
+        <div class="chip-line">
+          <span class="chip good">天洋新材 8天5板·光通信</span>
+          <span class="chip good">旭光电子 6天4板</span>
+          <span class="chip good">哈森股份 5天4板·消费电子</span>
+          <span class="chip good">中瓷电子 6天3板·通信</span>
+          <span class="chip good">汉森制药 3连板·医药</span>
+          <span class="chip good">*ST威领 3连板·锂矿</span>
+          <span class="chip good">通鼎互联 / 科森科技 2连板</span>
         </div>
-        <div class="flow-box">
-          <h4>资金净流出警示（当日）</h4>
-          <div class="flow-item"><span>寒武纪</span><span class="amt" style="color:var(--down)">-14.75亿</span></div>
-          <div class="flow-item"><span>大唐发电</span><span class="amt" style="color:var(--down)">-13.14亿</span></div>
-          <div class="flow-item"><span>胜宏科技</span><span class="amt" style="color:var(--down)">-13.13亿</span></div>
-          <div class="flow-item"><span>电子板块（整体）</span><span class="amt" style="color:var(--down)">-53.78亿</span></div>
+
+        <div class="diag-sub">次日方向（P0–P3）</div>
+        <div class="flow">
+          <div class="flow-box"><h4>P0 主线延续</h4>
+            <div class="flow-item"><span>贵金属 / 有色 / 锂矿</span><span class="amt" style="color:var(--up)">避险+商品</span></div>
+            <div class="flow-item"><span>通信设备 / 光通信</span><span class="amt" style="color:var(--up)">修复反弹</span></div>
+          </div>
+          <div class="flow-box"><h4>P1 修复低吸</h4>
+            <div class="flow-item"><span>算力硬件中军</span><span class="amt" style="color:var(--acc)">回踩5日线</span></div>
+            <div class="flow-item"><span>CPO核心</span><span class="amt" style="color:var(--acc)">均线企稳</span></div>
+          </div>
+        </div>
+        <div class="flow" style="margin-top:12px">
+          <div class="flow-box"><h4>P2 回避</h4>
+            <div class="flow-item"><span>高位连板 / 纯题材</span><span class="amt" style="color:var(--down)">负反馈扩散</span></div>
+            <div class="flow-item"><span>疫苗 / CRO / 创新药</span><span class="amt" style="color:var(--down)">Moderna拖累</span></div>
+          </div>
+          <div class="flow-box"><h4>P3 事件驱动</h4>
+            <div class="flow-item"><span>上海地产链</span><span class="amt" style="color:var(--gold)">政策观察</span></div>
+            <div class="flow-item"><span>半导体设备</span><span class="amt" style="color:var(--gold)">台积电A16</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -414,83 +436,83 @@
 
   <!-- ===== 模块3 短线精选 ===== -->
   <section class="sec">
-    <div class="sec-hd"><span class="no">3</span><h2>短线精选标的</h2><span class="tag">5 支 · 含参考买卖点 · 次日(8/17)</span></div>
+    <div class="sec-hd"><span class="no">3</span><h2>短线精选标的</h2><span class="tag">5 支 · 含参考买卖点</span></div>
     <div class="sec-bd">
       <div class="picks">
-
-        <div class="pick hot">
-          <div class="pick-top">
-            <div class="pick-name"><span class="n">网宿科技</span><span class="c">300017</span>
-              <span class="pick-type hot">强势追涨</span></div>
-            <span class="stars">★★★★★</span>
-          </div>
-          <div class="pick-logic"><b>触发逻辑：</b>算力租赁20cm涨停（17.33），主力净流入20.55亿居全市场前列，龙虎榜净买9.72亿（机构净买1.84亿），封单与量能双重验证，板块强度第一。</div>
-          <div class="levels">
-            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">17.0–17.8</div></div>
-            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">19.5–20.5</div></div>
-            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">15.8</div></div>
-          </div>
-          <div class="pick-note">次日开盘弱转强或回踩不破17.0可参与；20cm高波动，跌破15.8严格离场</div>
-        </div>
 
         <div class="pick dip">
           <div class="pick-top">
             <div class="pick-name"><span class="n">中际旭创</span><span class="c">300308</span>
               <span class="pick-type dip">回调低吸</span></div>
-            <span class="stars">★★★★★</span>
+            <span class="stars">★★★★☆</span>
           </div>
-          <div class="pick-logic"><b>触发逻辑：</b>CPO中军收943.00(+2.38%)，主力净流入9.02亿，为CPO"三剑客"之一；景气确认+拟受让中石科技股权强化协同，回踩即低吸机会。</div>
+          <div class="pick-logic"><b>触发逻辑：</b>算力硬件中军，8-21收涨4.29%报943.00，量比1.05、委比60%资金承接强；SK海力士CPO论文+阿里云capex支撑中长期逻辑，分歧日修复中军优先于高位纯题材。</div>
           <div class="levels">
-            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">905–935</div></div>
+            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">905–920</div></div>
             <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">1010–1050</div></div>
-            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">870</div></div>
+            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">878</div></div>
           </div>
-          <div class="pick-note">回踩5日线（约905-935）不破可分批低吸；放量跌破870离场，严守纪律</div>
+          <div class="pick-note">回踩不破900且缩量企稳可低吸；放量跌破878（强支撑）离场，破位不补仓</div>
+        </div>
+
+        <div class="pick hot">
+          <div class="pick-top">
+            <div class="pick-name"><span class="n">赤峰黄金</span><span class="c">600988</span>
+              <span class="pick-type hot">强势追涨</span></div>
+            <span class="stars">★★★★☆</span>
+          </div>
+          <div class="pick-logic"><b>触发逻辑：</b>贵金属主线龙头，8-21收涨7.22%报49.43，现货黄金破4543创阶段新高、美债收益率受压；避险+商品双驱动，量比1.63温和放量。</div>
+          <div class="levels">
+            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">47.5–49.0</div></div>
+            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">54.0–56.0</div></div>
+            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">45.0</div></div>
+          </div>
+          <div class="pick-note">仅高开≤3%且换手充分时介入，不追板；金价跌破4500或个股破45（5日线）止损</div>
+        </div>
+
+        <div class="pick hot">
+          <div class="pick-top">
+            <div class="pick-name"><span class="n">融捷股份</span><span class="c">002192</span>
+              <span class="pick-type hot">强势追涨</span></div>
+            <span class="stars">★★★☆☆</span>
+          </div>
+          <div class="pick-logic"><b>触发逻辑：</b>锂矿能源金属涨停（8-21收72.51，+10%），广期所碳酸锂主力站上15.5万/吨；商品涨价+能源金属板块+4.60%共振，封单强（委比100%）。</div>
+          <div class="levels">
+            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">73.0–76.0</div></div>
+            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">82.0–88.0</div></div>
+            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">68.0</div></div>
+          </div>
+          <div class="pick-note">仅次日高开≤3%且放量换手承接后介入，或回封换手时跟随；一字/大幅高开不追；破68（涨停价下方）止损</div>
         </div>
 
         <div class="pick dip">
           <div class="pick-top">
             <div class="pick-name"><span class="n">天孚通信</span><span class="c">300394</span>
               <span class="pick-type dip">回调低吸</span></div>
-            <span class="stars">★★★★☆</span>
-          </div>
-          <div class="pick-logic"><b>触发逻辑：</b>CPO核心组件供应商，收267.71(+4.10%)，主力净流入12.58亿；技术形态修复、量能温和，板块内相对滞涨具补涨空间。</div>
-          <div class="levels">
-            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">258–272</div></div>
-            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">300–315</div></div>
-            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">245</div></div>
-          </div>
-          <div class="pick-note">缩量回踩258-272企稳可介入；主线走弱或跌破245则规避</div>
-        </div>
-
-        <div class="pick hot">
-          <div class="pick-top">
-            <div class="pick-name"><span class="n">亨通光电</span><span class="c">600487</span>
-              <span class="pick-type hot">强势追涨</span></div>
-            <span class="stars">★★★★☆</span>
-          </div>
-          <div class="pick-logic"><b>触发逻辑：</b>光纤光缆龙头涨停(62.98)，特大单净流入32.72亿居全市场首位；商务部对印度单模光纤反倾销续征5年 + 通信网年内8000亿投资双催化。</div>
-          <div class="levels">
-            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">61.5–64.0</div></div>
-            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">70–74</div></div>
-            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">58.0</div></div>
-          </div>
-          <div class="pick-note">封板次日回踩不破61.5可参与；破58离场，注意光纤反倾销事件兑现节奏</div>
-        </div>
-
-        <div class="pick hot">
-          <div class="pick-top">
-            <div class="pick-name"><span class="n">中国稀土</span><span class="c">000831</span>
-              <span class="pick-type hot">强势追涨</span></div>
             <span class="stars">★★★☆☆</span>
           </div>
-          <div class="pick-logic"><b>触发逻辑：</b>资源线反转首涨涨停(60.95)，龙虎榜净买5.22亿（机构净买2.53亿）；稀土出口管制实质执法+旺季备货，但反转定性需周一2板确认。</div>
+          <div class="pick-logic"><b>触发逻辑：</b>CPO核心，8-21逆市微跌1.15%报273.08（"易中天"唯一下跌），属分歧日被动回调；板块修复背景下弹性标的，回踩10日线企稳性价比优于追高。</div>
           <div class="levels">
-            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">60.0–63.0</div></div>
-            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">68–72</div></div>
-            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">56.0</div></div>
+            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">265–272</div></div>
+            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">300–315</div></div>
+            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">250</div></div>
           </div>
-          <div class="pick-note">需8/17确认2板或弱转强再介入；若无法连板则降低预期，破56离场（反转线尚待验证）</div>
+          <div class="pick-note">板块不破位、个股缩量回踩265附近企稳低吸；破250（前低/强支撑）离场</div>
+        </div>
+
+        <div class="pick hot">
+          <div class="pick-top">
+            <div class="pick-name"><span class="n">湖南白银</span><span class="c">002716</span>
+              <span class="pick-type hot">强势追涨</span></div>
+            <span class="stars">★★☆☆☆</span>
+          </div>
+          <div class="pick-logic"><b>触发逻辑：</b>白银+贵金属小盘弹性标的，8-21涨停报10.42（+10.03%），现货白银逼近69美元/盎司；金价新高映射下的高弹性博弈方向，换手18%活跃度高。</div>
+          <div class="levels">
+            <div class="lv buy"><div class="lk">参考买点</div><div class="lv-v">10.4–10.9</div></div>
+            <div class="lv tp"><div class="lk">止盈参考</div><div class="lv-v">11.8–12.5</div></div>
+            <div class="lv sl"><div class="lk">止损位</div><div class="lv-v">9.6</div></div>
+          </div>
+          <div class="pick-note">仅激进账户、高开≤3%且放量承接时轻仓跟随；破9.6（涨停价下方）止损，严禁重仓追板</div>
         </div>
 
       </div>
@@ -629,10 +651,8 @@
   <!-- ===== FOOTER ===== -->
   <footer class="foot">
     <b>短线选股分析自动化 · 每交易日盘前 08:30 / 盘后 15:30 自动生成</b><br>
-    数据来源：财经新闻 / 宏观指标 / 行情资金结构化数据（综合消息面与盘面，2026-08-14 收盘，来源：东方财富、证券时报·数据宝、央广财经、腾讯财经、雪球、淘股吧等公开报道）<br>
-    <br>
-    <b>免责声明</b>：以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。<br>
-    以上分析基于公开数据，不构成投资建议。
+    数据来源：财经新闻 / 宏观指标 / 行情资金结构化数据（综合消息面与盘面，2026-08-21 收盘）<br>
+    以上分析基于公开数据，仅供研究参考，<b>不构成任何投资建议</b>，据此操作风险自担。
   </footer>
 
 </div>
